@@ -1,0 +1,108 @@
+# Laravel specific
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/public/*
+!/storage/app/public/.gitkeep
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/testing/*
+!/storage/framework/testing/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# Environment files
+.env
+.env.backup
+.env.production
+.env.local
+.env.testing
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Build files
+/public/build/
+/public/mix-manifest.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+.phpunit.result.cache
+coverage/
+
+# Documentation build files
+/docs/_build/
+
+# Backup files
+*.bak
+*.backup
+
+# Development tools
+.php_cs.cache
+.phpunit.cache
+
+# Claude AI files (development only)
+.claude/
+
+# Development scripts and temporary files
+*.bat
+*.ps1
+test-*.php
+clear-cache.php
+enable-*.bat
+enable-*.ps1
+
+# Documentation files that are not needed in production
+*_IMPLEMENTATION*.md
+*_FIX*.md
+*_SUMMARY*.md
+*_STATUS*.md
+*_CHECKLIST*.md
+PHASE*.md
+QUICK_*.md
+SETUP_*.md
+SIDEBAR_*.md
+SYSTEM_*.md
+TELEGRAM_*.md
+ZIP_*.md
+MYSQL_*.md
+SUPABASE_*.md
+BACKUP_*.md
+CLEANUP_*.md
+COMPLETE_*.md
+DYNAMIC_*.md
+ENABLE_*.md
+FINAL_*.md
+GET_*.md
+HOW_TO_*.md
+LESSON_*.md
+SECURITY_*.md
+ADMIN_LOGIN_INSTRUCTIONS.md
+ATTACHMENT_FEATURE_IMPLEMENTATION.md
+AUTHENTICATION_UPDATE.md

@@ -10,6 +10,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::prefix('lessons')->group(function () {
     Route::get('/', [LessonController::class, 'index'])->name('lessons.index');
     Route::get('/{id}', [LessonController::class, 'show'])->name('lessons.show');
+    Route::get('/{lesson}/download/{attachment}', [LessonController::class, 'downloadAttachment'])->name('lessons.download-attachment');
 });
 
 Route::prefix('blog')->group(function () {
@@ -22,6 +23,7 @@ Route::get('/about', [App\Http\Controllers\PageController::class, 'about'])->nam
 // Resources routes
 Route::get('/resources', [App\Http\Controllers\ResourceController::class, 'index'])->name('resources.index');
 Route::get('/resources/{id}/download', [App\Http\Controllers\ResourceController::class, 'download'])->name('resources.download');
+
 
 // Admin authentication routes (outside middleware)
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -41,12 +43,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // Admin routes (protected)
-Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['admin.auth', 'prevent.back.history'])->group(function () {
     // Dashboard
     Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
     
     // Lessons Management
-    Route::resource('lessons', App\Http\Controllers\Admin\LessonController::class);
+    Route::resource('lessons', App\Http\Controllers\Admin\LessonController::class)->middleware('large.uploads');
     Route::delete('/lessons/{lesson}/attachments/{index}', [App\Http\Controllers\Admin\LessonController::class, 'removeAttachment'])->name('lessons.remove-attachment');
     
     // Blog Management
@@ -82,7 +84,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::resource('teaching-tips', App\Http\Controllers\Admin\TeachingTipController::class);
     
     // Resources Management
-    Route::resource('resources', App\Http\Controllers\Admin\ResourceController::class);
+    Route::resource('resources', App\Http\Controllers\Admin\ResourceController::class)->middleware('large.uploads');
     
     // Newsletter Management
     Route::get('/newsletters', [App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletters.index');
@@ -95,5 +97,6 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
     Route::post('/settings/clear-cache', [App\Http\Controllers\Admin\SettingsController::class, 'clearCache'])->name('settings.clear-cache');
     Route::post('/settings/optimize', [App\Http\Controllers\Admin\SettingsController::class, 'optimizeApp'])->name('settings.optimize');
     Route::post('/settings/migrate', [App\Http\Controllers\Admin\SettingsController::class, 'runMigrations'])->name('settings.migrate');
+    Route::post('/settings/telegram', [App\Http\Controllers\Admin\SettingsController::class, 'updateTelegramSettings'])->name('settings.telegram');
     Route::post('/settings/cleanup', [App\Http\Controllers\Admin\SettingsController::class, 'cleanupStorage'])->name('settings.cleanup');
 });

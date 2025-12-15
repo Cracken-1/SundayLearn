@@ -86,7 +86,7 @@
         </div>
         @endif
 
-        <!-- All Resources -->
+        <!-- Resources List -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <h2>All Resources ({{ $resources->total() }})</h2>
             <div style="display: flex; gap: 1rem;">
@@ -100,26 +100,72 @@
 
         @if($resources->count() > 0)
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
-            @foreach($resources as $resource)
-            <div class="resource-card">
-                <div class="resource-icon">
-                    <i class="fas fa-{{ $resource->getTypeIcon() }}"></i>
-                </div>
-                <div class="resource-info">
-                    <h3>{{ $resource->title }}</h3>
-                    <p>{{ Str::limit($resource->description, 100) }}</p>
-                    <div class="resource-meta">
-                        <span><i class="fas fa-tag"></i> {{ ucfirst($resource->type) }}</span>
-                        @if($resource->age_group)
-                            <span><i class="fas fa-users"></i> {{ $resource->age_group }}</span>
-                        @endif
-                        <span><i class="fas fa-download"></i> {{ $resource->downloads }}</span>
+            @foreach($groupedResources as $group)
+                @if($group['type'] === 'lesson')
+                    <!-- Lesson Group Card -->
+                    <div class="resource-card lesson-card">
+                        <div class="resource-icon" style="background: linear-gradient(135deg, var(--secondary-color), #2980b9);">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="resource-info">
+                            <div style="margin-bottom: 1rem;">
+                                <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light);">Lesson Bundle</span>
+                                <h3 style="margin-top: 0.25rem;">
+                                    <a href="{{ route('lessons.show', $group['lesson']->id) }}" style="text-decoration: none; color: inherit;">
+                                        {{ $group['lesson']->title }}
+                                    </a>
+                                </h3>
+                            </div>
+
+                            <div class="lesson-files-list">
+                                @foreach($group['items'] as $resource)
+                                    <div class="lesson-file-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #eee; gap: 0.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden;">
+                                            <i class="fas fa-{{ $resource->getTypeIcon() }}" style="color: var(--secondary-color); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                            <div style="overflow: hidden;">
+                                                <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $resource->title }}</div>
+                                                <div style="font-size: 0.75rem; color: var(--text-light);">
+                                                    {{ ucfirst($resource->type) }} • {{ $resource->file_size_formatted }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="{{ route('resources.download', $resource->id) }}" class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                            
+                            <a href="{{ route('lessons.show', $group['lesson']->id) }}" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                                <i class="fas fa-eye"></i> View Lesson
+                            </a>
+                        </div>
                     </div>
-                    <a href="{{ route('resources.download', $resource->id) }}" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-                        <i class="fas fa-download"></i> Download
-                    </a>
-                </div>
-            </div>
+                @else
+                    <!-- Standalone Resource Card -->
+                    @php $resource = $group['item']; @endphp
+                    <div class="resource-card">
+                        <div class="resource-icon">
+                            <i class="fas fa-{{ $resource->getTypeIcon() }}"></i>
+                        </div>
+                        <div class="resource-info">
+                            <h3>{{ $resource->title }}</h3>
+                            <p>{{ Str::limit($resource->description, 100) }}</p>
+                            
+                            <div class="resource-meta">
+                                <span><i class="fas fa-tag"></i> {{ ucfirst($resource->type) }}</span>
+                                @if($resource->age_group)
+                                    <span><i class="fas fa-users"></i> {{ $resource->age_group }}</span>
+                                @endif
+                                <span><i class="fas fa-download"></i> {{ $resource->downloads }}</span>
+                            </div>
+
+                            <a href="{{ route('resources.download', $resource->id) }}" class="btn btn-primary" style="width: 100%; margin-top: auto;">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                @endif
             @endforeach
         </div>
 

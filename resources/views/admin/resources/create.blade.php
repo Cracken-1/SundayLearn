@@ -32,7 +32,7 @@
                                   placeholder="Brief description of the resource...">{{ old('description') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror>
+                        @enderror
                     </div>
                     
                     <!-- Type -->
@@ -46,7 +46,7 @@
                             <option value="activity_guide" {{ old('type') == 'activity_guide' ? 'selected' : '' }}>Activity Guide</option>
                             <option value="craft" {{ old('type') == 'craft' ? 'selected' : '' }}>Craft</option>
                             <option value="game" {{ old('type') == 'game' ? 'selected' : '' }}>Game</option>
-                            <option value="lesson_plan" {{ old('type') == 'lesson_plan' ? 'selected' : '' }}>Lesson Plan</option>
+                            <option value="video" {{ old('type') == 'video' ? 'selected' : '' }}>Video</option>
                             <option value="other" {{ old('type') == 'other' ? 'selected' : '' }}>Other</option>
                         </select>
                         @error('type')
@@ -54,18 +54,62 @@
                         @enderror
                     </div>
                     
-                    <!-- File Upload -->
-                    <div class="mb-3">
-                        <label for="file" class="form-label">File *</label>
-                        <input type="file" class="form-control @error('file') is-invalid @enderror" 
-                               id="file" name="file" required 
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip">
-                        @error('file')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <small class="text-muted">
-                            Accepted: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, ZIP (Max: 10MB)
-                        </small>
+                    <!-- File Upload - Choose Type -->
+                    <div class="mb-4">
+                        <label class="form-label">Resource Type & File *</label>
+                        
+                        <!-- Video Files -->
+                        <div class="mb-3">
+                            <label for="video_file" class="form-label">
+                                <i class="fas fa-video text-danger"></i> Video File
+                            </label>
+                            <input type="file" class="form-control @error('video_file') is-invalid @enderror" 
+                                   id="video_file" name="video_file" 
+                                   accept=".mp4,.avi,.mov,.wmv,.webm,.mkv,.flv">
+                            @error('video_file')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">
+                                Supported: MP4, AVI, MOV, WMV, WebM, MKV, FLV (Max: 100MB)
+                            </small>
+                        </div>
+
+                        <!-- Audio Files -->
+                        <div class="mb-3">
+                            <label for="audio_file" class="form-label">
+                                <i class="fas fa-music text-success"></i> Audio File
+                            </label>
+                            <input type="file" class="form-control @error('audio_file') is-invalid @enderror" 
+                                   id="audio_file" name="audio_file" 
+                                   accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma">
+                            @error('audio_file')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">
+                                Supported: MP3, WAV, OGG, M4A, AAC, FLAC, WMA (Max: 100MB)
+                            </small>
+                        </div>
+
+                        <!-- Document Files -->
+                        <div class="mb-3">
+                            <label for="document_file" class="form-label">
+                                <i class="fas fa-file-alt text-primary"></i> Document/Image File
+                            </label>
+                            <input type="file" class="form-control @error('document_file') is-invalid @enderror" 
+                                   id="document_file" name="document_file" 
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar">
+                            @error('document_file')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">
+                                Supported: PDF, Word, Excel, PowerPoint, Images, Text, ZIP, RAR (Max: 100MB)
+                            </small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Please select only one file type. The system will automatically detect the resource type based on your selection.
+                        </div>
                     </div>
                     
                     <!-- Thumbnail Upload -->
@@ -141,8 +185,8 @@
             <div class="card-body">
                 <h6>File Requirements</h6>
                 <ul class="small">
-                    <li>Maximum file size: 10MB</li>
-                    <li>Supported formats: PDF, Word, Excel, PowerPoint, Images, ZIP</li>
+                    <li>Maximum file size: 50MB</li>
+                    <li>Supported formats: PDF, Word, Excel, PowerPoint, Images, ZIP, Video, Audio</li>
                     <li>Use descriptive file names</li>
                 </ul>
                 
@@ -153,7 +197,7 @@
                     <li><strong>Activity Guide:</strong> Step-by-step instructions</li>
                     <li><strong>Craft:</strong> Craft projects</li>
                     <li><strong>Game:</strong> Interactive games</li>
-                    <li><strong>Lesson Plan:</strong> Complete lesson plans</li>
+                    <li><strong>Video:</strong> Video resources and lessons</li>
                 </ul>
                 
                 <h6 class="mt-3">Best Practices</h6>
@@ -167,4 +211,68 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const videoInput = document.getElementById('video_file');
+    const audioInput = document.getElementById('audio_file');
+    const documentInput = document.getElementById('document_file');
+    const typeSelect = document.getElementById('type');
+    
+    // Clear other inputs when one is selected
+    videoInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            audioInput.value = '';
+            documentInput.value = '';
+            typeSelect.value = 'video';
+        }
+    });
+    
+    audioInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            videoInput.value = '';
+            documentInput.value = '';
+            typeSelect.value = 'audio';
+        }
+    });
+    
+    documentInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            videoInput.value = '';
+            audioInput.value = '';
+            // Keep the user-selected type for documents
+        }
+    });
+    
+    // File size validation
+    [videoInput, audioInput, documentInput].forEach(input => {
+        input.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (file.size > 100 * 1024 * 1024) { // 100MB
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-warning alert-dismissible fade show mt-2';
+                    alert.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> File "${file.name}" exceeds 100MB. Upload may take longer or fail.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    e.target.parentNode.appendChild(alert);
+                    
+                    // Auto-dismiss after 5 seconds
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 5000);
+                }
+            });
+        });
+    });
+});
+</script>
+@endpush
+
 @endsection

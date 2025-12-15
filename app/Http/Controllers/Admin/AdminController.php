@@ -195,12 +195,44 @@ class AdminController extends Controller
             ];
         }
 
-        // Skip HTTP requests for now to avoid timeout issues
-        return [
-            'status' => 'warning',
-            'message' => 'Bot status check disabled',
-            'details' => 'HTTP requests disabled for stability'
-        ];
+        try {
+            // Use cache to prevent rate limiting (cache for 5 minutes)
+            return cache()->remember('telegram_bot_status', 300, function () use ($botToken) {
+                $url = "https://api.telegram.org/bot{$botToken}/getMe";
+                
+                // Use file_get_contents with stream context for timeout and robustness
+                $context = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true]]);
+                $response = @file_get_contents($url, false, $context);
+                
+                $httpCode = 0;
+                if (isset($http_response_header) && is_array($http_response_header) && isset($http_response_header[0])) {
+                    if (preg_match('#HTTP/\S+\s+(\d{3})#', $http_response_header[0], $matches)) {
+                        $httpCode = (int)$matches[1];
+                    }
+                }
+                
+                if ($httpCode === 200 && $response) {
+                    $data = json_decode($response, true);
+                    return [
+                        'status' => 'online',
+                        'message' => 'Bot connected',
+                        'details' => '@' . ($data['result']['username'] ?? 'Unknown')
+                    ];
+                }
+
+                return [
+                    'status' => 'error',
+                    'message' => 'Bot connection failed',
+                    'details' => 'HTTP ' . $httpCode
+                ];
+            });
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Bot status check failed',
+                'details' => 'Connection error: ' . Str::limit($e->getMessage(), 30)
+            ];
+        }
     }
 
     private function checkTelegramChannel()
@@ -216,12 +248,44 @@ class AdminController extends Controller
             ];
         }
 
-        // Skip HTTP requests for now to avoid timeout issues
-        return [
-            'status' => 'warning',
-            'message' => 'Channel status check disabled',
-            'details' => 'HTTP requests disabled for stability'
-        ];
+        try {
+            // Use cache to prevent rate limiting
+            return cache()->remember('telegram_channel_status', 300, function () use ($botToken, $channelId) {
+                // Check if we can access the chat
+                $url = "https://api.telegram.org/bot{$botToken}/getChat?chat_id={$channelId}";
+                
+                $context = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true]]);
+                $response = @file_get_contents($url, false, $context);
+                
+                $httpCode = 0;
+                if (isset($http_response_header) && is_array($http_response_header) && isset($http_response_header[0])) {
+                    if (preg_match('#HTTP/\S+\s+(\d{3})#', $http_response_header[0], $matches)) {
+                        $httpCode = (int)$matches[1];
+                    }
+                }
+                
+                if ($httpCode === 200 && $response) {
+                    $data = json_decode($response, true);
+                    return [
+                        'status' => 'online',
+                        'message' => 'Channel accessible',
+                        'details' => $data['result']['title'] ?? 'Connected'
+                    ];
+                }
+
+                return [
+                    'status' => 'warning',
+                    'message' => 'Channel access restricted',
+                    'details' => 'Bot may not be admin (HTTP ' . $httpCode . ')'
+                ];
+            });
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Channel check failed',
+                'details' => 'Connection error: ' . Str::limit($e->getMessage(), 30)
+            ];
+        }
     }
 
     private function checkStorageStatus()

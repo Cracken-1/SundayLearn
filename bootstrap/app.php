@@ -1,5 +1,8 @@
 <?php
 
+// Load upload configuration first
+require_once __DIR__ . '/upload_config.php';
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application

@@ -77,6 +77,9 @@ test-*.php
 clear-cache.php
 enable-*.bat
 enable-*.ps1
+setup-production.php
+deploy-to-infinityfree.md
+setup-ngrok.bat
 
 # Documentation files that are not needed in production
 *_IMPLEMENTATION*.md

@@ -204,42 +204,70 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="attachments" class="form-label">Attachments (PDF, DOCX, Images, etc.)</label>
-                        <input type="file" class="form-control @error('attachments.*') is-invalid @enderror" 
-                               id="attachments" name="attachments[]" multiple 
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip">
+                    <!-- Video Attachments -->
+                    <div class="mb-4">
+                        <label for="video_attachments" class="form-label">
+                            <i class="fas fa-video text-danger"></i> Video Files
+                        </label>
+                        <input type="file" class="form-control @error('video_attachments.*') is-invalid @enderror" 
+                               id="video_attachments" name="video_attachments[]" multiple 
+                               accept=".mp4,.avi,.mov,.wmv,.webm,.mkv,.flv">
                         <small class="text-muted">
-                            Supported formats: PDF, Word, Excel, PowerPoint, Images, Text, ZIP (Max 10MB per file)
+                            Supported formats: MP4, AVI, MOV, WMV, WebM, MKV, FLV (Max 100MB per file)
                         </small>
-                        @error('attachments.*')
+                        @error('video_attachments.*')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <div id="video-preview" class="mt-2" style="display: none;">
+                            <div id="video-list" class="list-group"></div>
+                        </div>
                     </div>
-                    
-                    <div id="attachment-preview" class="mb-3" style="display: none;">
-                        <label class="form-label">Selected Files:</label>
-                        <div id="attachment-list" class="list-group"></div>
+
+                    <!-- Audio Attachments -->
+                    <div class="mb-4">
+                        <label for="audio_attachments" class="form-label">
+                            <i class="fas fa-music text-success"></i> Audio Files
+                        </label>
+                        <input type="file" class="form-control @error('audio_attachments.*') is-invalid @enderror" 
+                               id="audio_attachments" name="audio_attachments[]" multiple 
+                               accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma">
+                        <small class="text-muted">
+                            Supported formats: MP3, WAV, OGG, M4A, AAC, FLAC, WMA (Max 100MB per file)
+                        </small>
+                        @error('audio_attachments.*')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div id="audio-preview" class="mt-2" style="display: none;">
+                            <div id="audio-list" class="list-group"></div>
+                        </div>
                     </div>
-                    
-                    <hr class="my-4">
-                    
-                    <!-- SEO & Advanced -->
-                    <h5 class="mb-3">SEO & Advanced Options</h5>
-                    
-                    <div class="mb-3">
-                        <label for="tags" class="form-label">Tags</label>
-                        <input type="text" class="form-control" id="tags" name="tags" 
-                               value="{{ old('tags') }}" placeholder="faith, courage, miracles">
-                        <small class="text-muted">Comma-separated tags</small>
+
+                    <!-- Document Attachments -->
+                    <div class="mb-4">
+                        <label for="document_attachments" class="form-label">
+                            <i class="fas fa-file-alt text-primary"></i> Documents & Images
+                        </label>
+                        <input type="file" class="form-control @error('document_attachments.*') is-invalid @enderror" 
+                               id="document_attachments" name="document_attachments[]" multiple 
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar">
+                        <small class="text-muted">
+                            Supported formats: PDF, Word, Excel, PowerPoint, Images, Text, ZIP, RAR (Max 100MB per file)
+                        </small>
+                        @error('document_attachments.*')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div id="document-preview" class="mt-2" style="display: none;">
+                            <div id="document-list" class="list-group"></div>
+                        </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="meta_title" class="form-label">Meta Title</label>
-                                <input type="text" class="form-control" id="meta_title" name="meta_title" 
-                                       value="{{ old('meta_title') }}">
+                                <label for="tags" class="form-label">Tags</label>
+                                <input type="text" class="form-control" id="tags" name="tags" 
+                                       value="{{ old('tags') }}" placeholder="faith, courage, miracles">
+                                <small class="text-muted">Comma-separated tags</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -253,21 +281,28 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="meta_description" class="form-label">Meta Description</label>
-                        <textarea class="form-control" id="meta_description" name="meta_description" rows="2" 
-                                  placeholder="SEO description">{{ old('meta_description') }}</textarea>
-                    </div>
-                    
                     <hr class="my-4">
                     
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
                             <i class="fas fa-save"></i> Create Lesson
                         </button>
                         <a href="{{ route('admin.lessons.index') }}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Cancel
                         </a>
+                    </div>
+                    
+                    <!-- Upload Progress Bar -->
+                    <div id="upload-progress" class="mt-3" style="display: none;">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%;" 
+                                 id="progress-bar">
+                                <span id="progress-text">Uploading... 0%</span>
+                            </div>
+                        </div>
+                        <small class="text-muted mt-2 d-block" id="upload-status">Preparing upload...</small>
                     </div>
                 </form>
             </div>
@@ -325,10 +360,25 @@
 
 @push('scripts')
 <script>
-document.getElementById('attachments').addEventListener('change', function(e) {
-    const files = Array.from(e.target.files);
-    const preview = document.getElementById('attachment-preview');
-    const list = document.getElementById('attachment-list');
+// Handle video attachments
+document.getElementById('video_attachments').addEventListener('change', function(e) {
+    handleFilePreview(e, 'video-preview', 'video-list', 'video');
+});
+
+// Handle audio attachments
+document.getElementById('audio_attachments').addEventListener('change', function(e) {
+    handleFilePreview(e, 'audio-preview', 'audio-list', 'audio');
+});
+
+// Handle document attachments
+document.getElementById('document_attachments').addEventListener('change', function(e) {
+    handleFilePreview(e, 'document-preview', 'document-list', 'document');
+});
+
+function handleFilePreview(event, previewId, listId, type) {
+    const files = Array.from(event.target.files);
+    const preview = document.getElementById(previewId);
+    const list = document.getElementById(listId);
     
     if (files.length > 0) {
         preview.style.display = 'block';
@@ -336,49 +386,219 @@ document.getElementById('attachments').addEventListener('change', function(e) {
         
         files.forEach((file, index) => {
             const fileSize = (file.size / 1024 / 1024).toFixed(2);
-            const fileIcon = getFileIcon(file.name);
+            const fileIcon = getFileIcon(file.name, type);
+            const isLargeFile = file.size > 100 * 1024 * 1024; // 100MB
             
             const item = document.createElement('div');
-            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.className = `list-group-item d-flex justify-content-between align-items-center ${isLargeFile ? 'border-warning' : ''}`;
             item.innerHTML = `
-                <div>
-                    <i class="${fileIcon}" style="margin-right: 0.5rem;"></i>
-                    <strong>${file.name}</strong>
-                    <span class="text-muted ms-2">(${fileSize} MB)</span>
+                <div class="d-flex align-items-center">
+                    <i class="${fileIcon}" style="margin-right: 0.75rem; font-size: 1.2em;"></i>
+                    <div>
+                        <strong>${file.name}</strong>
+                        <div class="text-muted small">${fileSize} MB</div>
+                        ${isLargeFile ? '<div class="text-warning small"><i class="fas fa-exclamation-triangle"></i> File size exceeds 100MB</div>' : ''}
+                    </div>
                 </div>
-                <span class="badge bg-primary">${getFileType(file.name)}</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-${getBadgeColor(type)}">${getFileType(file.name)}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(this, '${event.target.id}', ${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             `;
             list.appendChild(item);
         });
     } else {
         preview.style.display = 'none';
     }
-});
+}
 
-function getFileIcon(filename) {
+function getFileIcon(filename, type) {
     const ext = filename.split('.').pop().toLowerCase();
-    const icons = {
-        'pdf': 'fas fa-file-pdf text-danger',
-        'doc': 'fas fa-file-word text-primary',
-        'docx': 'fas fa-file-word text-primary',
-        'xls': 'fas fa-file-excel text-success',
-        'xlsx': 'fas fa-file-excel text-success',
-        'ppt': 'fas fa-file-powerpoint text-warning',
-        'pptx': 'fas fa-file-powerpoint text-warning',
-        'txt': 'fas fa-file-alt text-secondary',
-        'jpg': 'fas fa-file-image text-info',
-        'jpeg': 'fas fa-file-image text-info',
-        'png': 'fas fa-file-image text-info',
-        'gif': 'fas fa-file-image text-info',
-        'zip': 'fas fa-file-archive text-dark'
+    
+    if (type === 'video') {
+        return 'fas fa-file-video text-danger';
+    } else if (type === 'audio') {
+        return 'fas fa-file-audio text-success';
+    } else {
+        const icons = {
+            'pdf': 'fas fa-file-pdf text-danger',
+            'doc': 'fas fa-file-word text-primary',
+            'docx': 'fas fa-file-word text-primary',
+            'xls': 'fas fa-file-excel text-success',
+            'xlsx': 'fas fa-file-excel text-success',
+            'ppt': 'fas fa-file-powerpoint text-warning',
+            'pptx': 'fas fa-file-powerpoint text-warning',
+            'txt': 'fas fa-file-alt text-secondary',
+            'jpg': 'fas fa-file-image text-info',
+            'jpeg': 'fas fa-file-image text-info',
+            'png': 'fas fa-file-image text-info',
+            'gif': 'fas fa-file-image text-info',
+            'zip': 'fas fa-file-archive text-dark',
+            'rar': 'fas fa-file-archive text-dark'
+        };
+        return icons[ext] || 'fas fa-file text-secondary';
+    }
+}
+
+function getBadgeColor(type) {
+    const colors = {
+        'video': 'danger',
+        'audio': 'success',
+        'document': 'primary'
     };
-    return icons[ext] || 'fas fa-file text-secondary';
+    return colors[type] || 'secondary';
 }
 
 function getFileType(filename) {
     const ext = filename.split('.').pop().toUpperCase();
     return ext;
 }
+
+function removeFile(button, inputId, index) {
+    // Note: This is a visual removal only. 
+    // Actual file removal from input requires recreating the FileList
+    button.closest('.list-group-item').remove();
+    
+    // Check if list is empty and hide preview
+    const listId = inputId.replace('_attachments', '-list');
+    const previewId = inputId.replace('_attachments', '-preview');
+    const list = document.getElementById(listId);
+    const preview = document.getElementById(previewId);
+    
+    if (list.children.length === 0) {
+        preview.style.display = 'none';
+        document.getElementById(inputId).value = '';
+    }
+}
+
+// File size validation and upload progress
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInputs = ['video_attachments', 'audio_attachments', 'document_attachments'];
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submit-btn');
+    const progressContainer = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const uploadStatus = document.getElementById('upload-status');
+    
+    // File size validation
+    fileInputs.forEach(inputId => {
+        document.getElementById(inputId).addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            let hasLargeFiles = false;
+            
+            files.forEach(file => {
+                if (file.size > 100 * 1024 * 1024) { // 100MB
+                    hasLargeFiles = true;
+                }
+            });
+            
+            if (hasLargeFiles) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-warning alert-dismissible fade show mt-2';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> Some files exceed 100MB. Upload may take longer or fail on slower connections.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                e.target.parentNode.appendChild(alert);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 5000);
+            }
+        });
+    });
+    
+    // Handle form submission with progress
+    form.addEventListener('submit', function(e) {
+        // Check if there are files to upload
+        const hasFiles = fileInputs.some(inputId => {
+            const input = document.getElementById(inputId);
+            return input.files && input.files.length > 0;
+        });
+        
+        if (hasFiles) {
+            e.preventDefault();
+            
+            // Show progress bar
+            progressContainer.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            
+            // Create FormData
+            const formData = new FormData(form);
+            
+            // Create XMLHttpRequest for progress tracking
+            const xhr = new XMLHttpRequest();
+            
+            // Track upload progress
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.textContent = `Uploading... ${percentComplete}%`;
+                    
+                    if (percentComplete < 30) {
+                        uploadStatus.textContent = 'Uploading files...';
+                    } else if (percentComplete < 70) {
+                        uploadStatus.textContent = 'Processing attachments...';
+                    } else if (percentComplete < 90) {
+                        uploadStatus.textContent = 'Saving lesson data...';
+                    } else {
+                        uploadStatus.textContent = 'Finalizing...';
+                    }
+                }
+            });
+            
+            // Handle completion
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200 || xhr.status === 302) {
+                    progressBar.style.width = '100%';
+                    progressText.textContent = 'Upload Complete!';
+                    uploadStatus.textContent = 'Lesson created successfully. Redirecting...';
+                    progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
+                    progressBar.classList.add('bg-success');
+                    
+                    // Handle redirect
+                    setTimeout(() => {
+                        if (xhr.responseURL) {
+                            window.location.href = xhr.responseURL;
+                        } else {
+                            window.location.href = '{{ route("admin.lessons.index") }}';
+                        }
+                    }, 1000);
+                } else {
+                    // Handle error
+                    progressBar.classList.add('bg-danger');
+                    progressText.textContent = 'Upload Failed';
+                    uploadStatus.textContent = 'An error occurred. Please try again.';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Create Lesson';
+                }
+            });
+            
+            // Handle errors
+            xhr.addEventListener('error', function() {
+                progressBar.classList.add('bg-danger');
+                progressText.textContent = 'Upload Failed';
+                uploadStatus.textContent = 'Network error. Please check your connection and try again.';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Create Lesson';
+            });
+            
+            // Send request
+            xhr.open('POST', form.action);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send(formData);
+        }
+    });
+});
 </script>
 @endpush
 @endsection

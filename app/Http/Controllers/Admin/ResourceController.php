@@ -32,24 +32,48 @@ class ResourceController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:worksheet,coloring_page,activity_guide,craft,game,other',
-            'file' => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip',
+            // Relaxed type validation to allow dynamic types
+            'type' => 'required|string|max:50', 
+            'video_file' => 'nullable|file|max:102400|mimes:mp4,avi,mov,wmv,webm,mkv,flv',
+            'audio_file' => 'nullable|file|max:102400|mimes:mp3,wav,ogg,m4a,aac,flac,wma',
+            'document_file' => 'nullable|file|max:102400|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip,rar',
             'thumbnail' => 'nullable|image|max:2048',
             'category' => 'nullable|string|max:100',
             'age_group' => 'nullable|string|max:50',
             'is_featured' => 'nullable|boolean',
         ]);
         
-        // Handle file upload
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('resources/files', $filename, 'public');
-            
-            $validated['file_url'] = asset('storage/' . $path);
-            $validated['file_size'] = $file->getSize();
-            $validated['file_type'] = $file->getClientOriginalExtension();
+        // Determine which file was uploaded and handle it
+        $file = null;
+        $fileCategory = null;
+        
+        if ($request->hasFile('video_file')) {
+            $file = $request->file('video_file');
+            $fileCategory = 'video';
+            $validated['type'] = 'video';
+        } elseif ($request->hasFile('audio_file')) {
+            $file = $request->file('audio_file');
+            $fileCategory = 'audio';
+            $validated['type'] = 'audio';
+        } elseif ($request->hasFile('document_file')) {
+            $file = $request->file('document_file');
+            $fileCategory = 'document';
+            // Keep the selected type for documents
         }
+        
+        // Validate that at least one file was uploaded
+        if (!$file) {
+            return back()->withErrors(['file' => 'Please select at least one file to upload.'])->withInput();
+        }
+        
+        // Handle file upload
+        $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs("resources/{$fileCategory}", $filename, 'public');
+        
+        $validated['file_url'] = asset('storage/' . $path);
+        $validated['file_size'] = $file->getSize();
+        $validated['file_type'] = $file->getClientOriginalExtension();
+        $validated['file_category'] = $fileCategory;
         
         // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {
@@ -82,8 +106,9 @@ class ResourceController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:worksheet,coloring_page,activity_guide,craft,game,other',
-            'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip',
+            // Relaxed type validation
+            'type' => 'required|string|max:50', 
+            'file' => 'nullable|file|max:51200|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,mp4,avi,mov,wmv,webm,mp3,wav,ogg,m4a',
             'thumbnail' => 'nullable|image|max:2048',
             'category' => 'nullable|string|max:100',
             'age_group' => 'nullable|string|max:50',

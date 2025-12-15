@@ -10,15 +10,28 @@ class TelegramImportController extends Controller
 {
     public function index(Request $request)
     {
-        // Always use safe static data to avoid 500 errors
-        $imports = new LengthAwarePaginator([], 0, 20);
-        $stats = [
-            'total' => 0,
-            'pending' => 0,
-            'processing' => 0,
-            'completed' => 0,
-            'failed' => 0,
-        ];
+        try {
+            $imports = \App\Models\TelegramRawImport::latest()
+                ->paginate(20);
+            
+            $stats = [
+                'total' => \App\Models\TelegramRawImport::count(),
+                'pending' => \App\Models\TelegramRawImport::where('processing_status', 'pending')->count(),
+                'processing' => \App\Models\TelegramRawImport::where('processing_status', 'processing')->count(),
+                'completed' => \App\Models\TelegramRawImport::where('processing_status', 'completed')->count(),
+                'failed' => \App\Models\TelegramRawImport::where('processing_status', 'failed')->count(),
+            ];
+        } catch (\Exception $e) {
+            // Fallback to empty data if database issues
+            $imports = new LengthAwarePaginator([], 0, 20);
+            $stats = [
+                'total' => 0,
+                'pending' => 0,
+                'processing' => 0,
+                'completed' => 0,
+                'failed' => 0,
+            ];
+        }
 
         return view('admin.telegram-imports.index', compact('imports', 'stats'));
     }

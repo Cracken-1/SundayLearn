@@ -18,7 +18,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+        \App\Http\Middleware\CustomValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\SecurityHeaders::class,
@@ -71,5 +71,7 @@ class Kernel extends HttpKernel
         'rate.limit' => \App\Http\Middleware\RateLimiting::class,
         'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
         'input.sanitize' => \App\Http\Middleware\InputSanitization::class,
+        'large.uploads' => \App\Http\Middleware\AllowLargeUploads::class,
+        'prevent.back.history' => \App\Http\Middleware\PreventBackHistory::class,
     ];
 }

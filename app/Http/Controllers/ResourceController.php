@@ -19,7 +19,8 @@ class ResourceController extends Controller
     public function index(SearchRequest $request)
     {
         try {
-            $query = Resource::query();
+            // Eager load lesson relationship
+            $query = Resource::query()->with('lesson');
             
             // Secure filtering with validated input
             if ($request->validated()['type'] ?? null) {
@@ -38,7 +39,11 @@ class ResourceController extends Controller
             if ($searchTerm = $request->validated()['search'] ?? null) {
                 $query->where(function($q) use ($searchTerm) {
                     $q->where('title', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                      ->orWhere('description', 'like', '%' . $searchTerm . '%')
+                      // Also search in lesson title
+                      ->orWhereHas('lesson', function($l) use ($searchTerm) {
+                          $l->where('title', 'like', '%' . $searchTerm . '%');
+                      });
                 });
             }
             
@@ -61,7 +66,51 @@ class ResourceController extends Controller
             $perPage = min($request->validated()['per_page'] ?? 12, 50); // Limit per page
             $resources = $query->paginate($perPage);
             
-            // Cache expensive queries
+            // Group resources by lesson for the view
+            // We want to group items from the same lesson together, 
+            // while keeping standalone resources individual.
+            $groupedResources = collect();
+            $currentLessonId = null;
+            $currentGroup = null;
+
+            // Simple grouping: iterate and bunch same-lesson items
+            // Note: This relies on how the DB sorts them. 
+            // If sorted by 'newest' (created_at), lesson attachments might be interspersed if created at different times.
+            // But usually attachments are created together.
+            // To ensure they group nicely, we might want to sort by lesson_id secondary?
+            // But that messes up "Newest" sort.
+            // Let's just group generic buckets from the current page's results.
+            
+            $tempGroups = [];
+            foreach ($resources as $resource) {
+                if ($resource->lesson_id) {
+                    if (!isset($tempGroups[$resource->lesson_id])) {
+                        $tempGroups[$resource->lesson_id] = [
+                            'type' => 'lesson',
+                            'lesson' => $resource->lesson,
+                            'items' => collect([$resource]),
+                            'timestamp' => $resource->created_at // for sorting if needed
+                        ];
+                    } else {
+                        $tempGroups[$resource->lesson_id]['items']->push($resource);
+                    }
+                } else {
+                    // Standalone resource, use unique key
+                    $tempGroups['standalone_' . $resource->id] = [
+                        'type' => 'resource',
+                        'item' => $resource,
+                        'timestamp' => $resource->created_at
+                    ];
+                }
+            }
+            
+            // Re-flatten to a list of cards (LessonCards and ResourceCards)
+            // We want to maintain roughly the original order (e.g. Newest first)
+            // So we can sort these groups by the timestamp of their first item (or max timestamp?)
+            $groupedResources = collect($tempGroups)->sortByDesc('timestamp');
+
+            
+            // Cache expensive queries (for sidebar/filters)
             $featuredResources = Cache::remember('featured_resources', 3600, function () {
                 return Resource::featured()->take(3)->get();
             });
@@ -81,7 +130,7 @@ class ResourceController extends Controller
                     ->get();
             });
             
-            return view('resources.index', compact('resources', 'featuredResources', 'types', 'ageGroups'));
+            return view('resources.index', compact('resources', 'groupedResources', 'featuredResources', 'types', 'ageGroups'));
             
         } catch (\Exception $e) {
             Log::error('Resource index error: ' . $e->getMessage());
@@ -122,8 +171,21 @@ class ResourceController extends Controller
                 'user_agent' => request()->userAgent()
             ]);
             
-            // Redirect to file URL
-            return redirect($resource->file_url);
+            // Get file path from URL
+            $filePath = str_replace(asset('storage/'), '', $resource->file_url);
+            $fullPath = storage_path('app/public/' . $filePath);
+            
+            // Check if file exists locally
+            if (file_exists($fullPath)) {
+                // Get original filename or generate one
+                $filename = $resource->title . '.' . ($resource->file_type ?? 'file');
+                
+                // Return file download response
+                return response()->download($fullPath, $filename);
+            } else {
+                // Fallback to redirect if file doesn't exist locally
+                return redirect($resource->file_url);
+            }
             
         } catch (\Exception $e) {
             Log::error('Resource download error: ' . $e->getMessage());
@@ -155,5 +217,29 @@ class ResourceController extends Controller
         }
         
         return false;
+    }
+    
+    // getLessonAttachmentsAsResources removed (deprecated)
+
+    /**
+     * Map file type to resource type
+     */
+    private function mapFileTypeToResourceType($fileType)
+    {
+        $mapping = [
+            'pdf' => 'worksheet',
+            'doc' => 'worksheet',
+            'docx' => 'worksheet',
+            'ppt' => 'activity_guide',
+            'pptx' => 'activity_guide',
+            'jpg' => 'coloring_page',
+            'jpeg' => 'coloring_page',
+            'png' => 'coloring_page',
+            'gif' => 'coloring_page',
+            'zip' => 'craft',
+            'rar' => 'craft',
+        ];
+        
+        return $mapping[$fileType] ?? 'other';
     }
 }

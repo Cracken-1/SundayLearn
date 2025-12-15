@@ -20,19 +20,25 @@ class SearchRequest extends SecureRequest
             'type' => [
                 'nullable',
                 'string',
-                'in:lesson,blog,resource,event,teaching_tip'
+                // Relaxed validation to allow various content types including resource types
+                // 'in:lesson,blog,resource,event,teaching_tip,worksheet,coloring_page,activity_guide,craft,game,other'
+                // Actually, just let it be a string to avoid maintenance issues when new types are added
+                'max:50',
+                'regex:/^[a-zA-Z0-9\s\-_]+$/'
             ],
             'category' => [
                 'nullable',
                 'string',
                 'max:100',
-                'regex:/^[a-zA-Z0-9\s\-_]+$/'
+                // Allow & and other common chars
+                'regex:/^[a-zA-Z0-9\s\-_.,&()]+$/'
             ],
             'age_group' => [
                 'nullable',
                 'string',
                 'max:50',
-                'regex:/^[a-zA-Z0-9\s\-_]+$/'
+                // Allow + (e.g. 13+) and parens
+                'regex:/^[a-zA-Z0-9\s\-_.,+()]+$/'
             ],
             'sort' => [
                 'nullable',

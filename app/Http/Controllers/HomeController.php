@@ -68,27 +68,46 @@ class HomeController extends Controller
     
     /**
      * Get the best thumbnail for a lesson
+     * Priority: 1. Image attachments, 2. Video attachments, 3. Video URL thumbnail, 4. Set thumbnail, 5. Default
      */
     private function getBestThumbnail($lesson)
     {
-        if (!empty($lesson->video_url)) {
-            return $this->getVideoThumbnail($lesson->video_url);
-        }
-        
-        if (!empty($lesson->audio_url)) {
-            return 'audio-placeholder.jpg';
-        }
-        
+        // First priority: Look for image attachments
         if (!empty($lesson->attachments)) {
             foreach ($lesson->attachments as $attachment) {
                 $type = strtolower($attachment['type'] ?? '');
-                if (in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                if (in_array($type, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                     return $attachment['url'] ?? 'default.jpg';
+                }
+            }
+            
+            // Second priority: Look for video attachments (use first frame or video icon)
+            foreach ($lesson->attachments as $attachment) {
+                $type = strtolower($attachment['type'] ?? '');
+                if (in_array($type, ['mp4', 'avi', 'mov', 'wmv', 'webm'])) {
+                    // For video attachments, we'll use a video placeholder with the video info
+                    return 'video-attachment-placeholder.jpg';
                 }
             }
         }
         
-        return $lesson->thumbnail ?? 'default.jpg';
+        // Third priority: Video URL thumbnail (YouTube/Vimeo)
+        if (!empty($lesson->video_url)) {
+            return $this->getVideoThumbnail($lesson->video_url);
+        }
+        
+        // Fourth priority: Set thumbnail field
+        if (!empty($lesson->thumbnail)) {
+            return $lesson->thumbnail;
+        }
+        
+        // Fifth priority: Audio placeholder if has audio
+        if (!empty($lesson->audio_url) || $this->hasAttachmentType($lesson->attachments, ['mp3', 'wav', 'ogg', 'm4a'])) {
+            return 'audio-placeholder.jpg';
+        }
+        
+        // Final fallback
+        return 'default.jpg';
     }
     
     /**

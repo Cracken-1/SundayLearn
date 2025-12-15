@@ -177,20 +177,7 @@
 
 <section style="padding: 4rem 0; background: var(--background-light);">
     <div class="container">
-        @if($totalLessons > 0 || $totalBlogs > 0)
-        <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 1rem 2rem; border-radius: 10px; margin-bottom: 2rem; text-align: center; box-shadow: var(--shadow-light);">
-            <i class="fas fa-info-circle"></i> 
-            <strong>Live Data Active!</strong> You're now seeing actual content from the database 
-            @if($totalLessons > 0)
-                ({{ $totalLessons }} lesson{{ $totalLessons != 1 ? 's' : '' }})
-            @endif
-            @if($totalBlogs > 0)
-                @if($totalLessons > 0) and @endif
-                ({{ $totalBlogs }} blog post{{ $totalBlogs != 1 ? 's' : '' }})
-            @endif
-            mixed with sample content. Look for the <span style="background: rgba(255,255,255,0.3); padding: 0.2rem 0.5rem; border-radius: 8px;"><i class="fas fa-database"></i> LIVE</span> badge!
-        </div>
-        @endif
+
         <div style="text-align: center; margin-bottom: 3rem;">
             <h2>Featured Lessons This Week</h2>
             <p style="color: var(--text-light); font-size: 1.1rem;">Hand-picked lessons that teachers love most</p>
@@ -199,10 +186,10 @@
             @foreach($featuredLessons as $lesson)
             <div class="lesson-card">
                 <div class="lesson-thumbnail" style="position: relative; overflow: hidden;">
-                    @if($lesson['thumbnail'] && !in_array($lesson['thumbnail'], ['default.jpg', 'video-placeholder.jpg', 'audio-placeholder.jpg']))
+                    @if($lesson['thumbnail'] && !in_array($lesson['thumbnail'], ['default.jpg', 'video-placeholder.jpg', 'video-attachment-placeholder.jpg', 'audio-placeholder.jpg']))
                         <img src="{{ $lesson['thumbnail'] }}" alt="{{ $lesson['title'] }}" 
                              style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
-                    @elseif($lesson['thumbnail'] === 'video-placeholder.jpg')
+                    @elseif(in_array($lesson['thumbnail'], ['video-placeholder.jpg', 'video-attachment-placeholder.jpg']))
                         <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-video" style="font-size: 3rem; color: white;"></i>
                         </div>
@@ -225,17 +212,7 @@
                         @endif
                     </div>
                     @endif
-                    @if(isset($lesson['is_from_db']))
-                        @if($lesson['is_from_db'])
-                        <span style="position: absolute; top: 10px; right: 10px; background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                            <i class="fas fa-database"></i> LIVE
-                        </span>
-                        @else
-                        <span style="position: absolute; top: 10px; right: 10px; background: #6c757d; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                            <i class="fas fa-star"></i> SAMPLE
-                        </span>
-                        @endif
-                    @endif
+
                 </div>
                 <div class="lesson-info">
                     <h3>{{ $lesson['title'] }}</h3>
@@ -348,12 +325,8 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
             @foreach($recentPosts as $post)
             <div class="access-card" style="border-top: 4px solid var(--secondary-color); position: relative;">
-                <div style="position: absolute; top: -2px; right: 1rem; background: {{ isset($post['is_from_db']) && $post['is_from_db'] ? '#28a745' : 'var(--secondary-color)' }}; color: white; padding: 0.25rem 0.75rem; border-radius: 0 0 10px 10px; font-size: 0.8rem; font-weight: 600;">
-                    @if(isset($post['is_from_db']) && $post['is_from_db'])
-                        <i class="fas fa-database"></i> LIVE
-                    @else
-                        NEW
-                    @endif
+                <div style="position: absolute; top: -2px; right: 1rem; background: var(--secondary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 0 0 10px 10px; font-size: 0.8rem; font-weight: 600;">
+                    NEW
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                     <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">

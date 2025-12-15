@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\TelegramRawImport;
 use App\Services\TelegramService;
+use App\Services\TelegramContentParser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -53,6 +54,17 @@ class ProcessTelegramUpdate implements ShouldQueue
                 $fileId = $message['document']['file_id'];
             }
 
+            // Parse caption for structured content
+            $parser = new TelegramContentParser();
+            $parsedContent = $parser->parseCaption($caption);
+            
+            // Add parsed content to processing notes
+            $processingNotes = json_encode([
+                'parsed_content' => $parsedContent,
+                'is_structured' => $parser->isValidStructuredContent($parsedContent),
+                'freeform_analysis' => $parser->extractFreeformContent($caption),
+            ]);
+
             // Create raw import record
             $rawImport = TelegramRawImport::create([
                 'telegram_message_id' => $messageId,
@@ -61,6 +73,7 @@ class ProcessTelegramUpdate implements ShouldQueue
                 'caption' => $caption,
                 'telegram_data' => $this->update,
                 'processing_status' => TelegramRawImport::STATUS_PENDING,
+                'processing_notes' => $processingNotes,
             ]);
 
             Log::info('Telegram update processed and stored', [

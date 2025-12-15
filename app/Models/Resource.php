@@ -21,7 +21,17 @@ class Resource extends Model
         'file_type',
         'downloads_count',
         'is_featured',
+        'lesson_id',
+        'source',
     ];
+
+    /**
+     * Get the lesson that owns the resource.
+     */
+    public function lesson()
+    {
+        return $this->belongsTo(Lesson::class);
+    }
     
     protected $casts = [
         'file_size' => 'integer',

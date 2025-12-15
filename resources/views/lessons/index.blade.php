@@ -18,22 +18,6 @@
             </div>
         </div>
 
-        @php
-            $dbLessonsCount = $lessons->where('is_from_db', true)->count();
-            $sampleLessonsCount = $lessons->where('is_from_db', false)->count();
-        @endphp
-        
-        @if($dbLessonsCount > 0)
-        <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 1rem 2rem; border-radius: 10px; margin-bottom: 2rem; text-align: center; box-shadow: var(--shadow-light);">
-            <i class="fas fa-database"></i> 
-            <strong>{{ $dbLessonsCount }} Live Lesson{{ $dbLessonsCount != 1 ? 's' : '' }}</strong> from database
-            @if($sampleLessonsCount > 0)
-                + {{ $sampleLessonsCount }} sample lesson{{ $sampleLessonsCount != 1 ? 's' : '' }}
-            @endif
-            | Look for the <span style="background: rgba(255,255,255,0.3); padding: 0.2rem 0.5rem; border-radius: 8px;"><i class="fas fa-database"></i> LIVE</span> badge on cards!
-        </div>
-        @endif
-
         <div class="lessons-layout" style="min-height: calc(100vh - 200px);">
             <!-- Left Sidebar -->
             <aside class="lessons-sidebar">
@@ -87,79 +71,99 @@
             </aside>
 
             <!-- Main Content -->
-
-            <div class="lessons-grid">
-                @foreach($lessons as $lesson)
-                <div class="lesson-card">
-                    <div class="lesson-thumbnail">
-                        @if($lesson['thumbnail'] && !in_array($lesson['thumbnail'], ['default.jpg', 'video-placeholder.jpg', 'audio-placeholder.jpg']))
-                            <img src="{{ $lesson['thumbnail'] }}" alt="{{ $lesson['title'] }}" 
-                                 onerror="this.style.display='none';">
-                        @endif
-                        
-                        @if(!isset($lesson['thumbnail']) || in_array($lesson['thumbnail'], ['default.jpg', 'video-placeholder.jpg', 'audio-placeholder.jpg']) || empty($lesson['thumbnail']))
-                            @if(isset($lesson['thumbnail']) && $lesson['thumbnail'] === 'video-placeholder.jpg')
-                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                    <i class="fas fa-video" style="font-size: 3rem; color: white;"></i>
-                                </div>
-                            @elseif(isset($lesson['thumbnail']) && $lesson['thumbnail'] === 'audio-placeholder.jpg')
-                                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                    <i class="fas fa-headphones" style="font-size: 3rem; color: white;"></i>
-                                </div>
-                            @else
-                                <div style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);">
+            <div class="lessons-main-content">
+                <div class="lessons-grid">
+                    @foreach($lessons as $lesson)
+                    <div class="lesson-card">
+                        <div class="lesson-thumbnail">
+                            @php
+                                $isVideoUrl = false;
+                                $isImageUrl = false;
+                                
+                                if ($lesson['thumbnail'] && !in_array($lesson['thumbnail'], ['default.jpg', 'video-placeholder.jpg', 'video-attachment-placeholder.jpg', 'audio-placeholder.jpg'])) {
+                                    // Check if thumbnail is a video URL (ends with video extension)
+                                    $ext = strtolower(pathinfo($lesson['thumbnail'], PATHINFO_EXTENSION));
+                                    $isVideoUrl = in_array($ext, ['mp4', 'webm']);
+                                    $isImageUrl = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                }
+                            @endphp
+                            
+                            @if($isVideoUrl)
+                                {{-- Video thumbnail - show first frame --}}
+                                <video 
+                                    src="{{ $lesson['thumbnail'] }}" 
+                                    style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;"
+                                    muted
+                                    preload="metadata"
+                                    onloadedmetadata="this.currentTime = 1"
+                                ></video>
+                            @elseif($isImageUrl)
+                                {{-- Image thumbnail --}}
+                                <img src="{{ $lesson['thumbnail'] }}" alt="{{ $lesson['title'] }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                {{-- Fallback gradient if image fails to load --}}
+                                <div style="display: none; background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);">
                                     <i class="fas fa-book" style="font-size: 3rem; color: white;"></i>
                                 </div>
-                            @endif
-                        @endif
-                        
-                        @if(isset($lesson['has_video']) && $lesson['has_video'] || isset($lesson['has_audio']) && $lesson['has_audio'])
-                        <div class="media-indicators" style="position: absolute; bottom: 10px; left: 10px; display: flex; gap: 0.5rem;">
-                            @if(isset($lesson['has_video']) && $lesson['has_video'])
-                            <span class="media-icon video" style="background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
-                                <i class="fas fa-video"></i>
-                            </span>
-                            @endif
-                            @if(isset($lesson['has_audio']) && $lesson['has_audio'])
-                            <span class="media-icon audio" style="background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
-                                <i class="fas fa-volume-up"></i>
-                            </span>
-                            @endif
-                            @if(isset($lesson['has_documents']) && $lesson['has_documents'])
-                            <span class="media-icon documents" style="background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
-                                <i class="fas fa-file-pdf"></i>
-                            </span>
-                            @endif
-                        </div>
-                        @endif
-                        
-                        @if(isset($lesson['is_from_db']))
-                            @if($lesson['is_from_db'])
-                            <span style="position: absolute; top: 10px; right: 10px; background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                                <i class="fas fa-database"></i> LIVE
-                            </span>
                             @else
-                            <span style="position: absolute; top: 10px; right: 10px; background: #6c757d; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
-                                <i class="fas fa-star"></i> SAMPLE
-                            </span>
+                                {{-- Placeholder gradients based on media type --}}
+                                @if(isset($lesson['thumbnail']) && in_array($lesson['thumbnail'], ['video-placeholder.jpg', 'video-attachment-placeholder.jpg']))
+                                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <i class="fas fa-video" style="font-size: 3rem; color: white;"></i>
+                                    </div>
+                                @elseif(isset($lesson['thumbnail']) && $lesson['thumbnail'] === 'audio-placeholder.jpg')
+                                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                        <i class="fas fa-headphones" style="font-size: 3rem; color: white;"></i>
+                                    </div>
+                                @else
+                                    <div style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);">
+                                        <i class="fas fa-book" style="font-size: 3rem; color: white;"></i>
+                                    </div>
+                                @endif
                             @endif
-                        @endif
-                    </div>
-                    
-                    <div class="lesson-info">
-                        <h3>{{ $lesson['title'] }}</h3>
-                        <p class="scripture">{{ $lesson['scripture'] }}</p>
-                        <p class="theme">{{ $lesson['theme'] }}</p>
-                        
-                        <div class="lesson-meta">
-                            <span class="age-group"><i class="fas fa-users"></i> {{ $lesson['age_group'] }}</span>
-                            <span><i class="fas fa-clock"></i> {{ $lesson['duration'] }}</span>
+                            
+                            @if(isset($lesson['has_video']) && $lesson['has_video'] || isset($lesson['has_audio']) && $lesson['has_audio'])
+                            <div class="media-indicators" style="position: absolute; bottom: 10px; left: 10px; display: flex; gap: 0.5rem;">
+                                @if(isset($lesson['has_video']) && $lesson['has_video'])
+                                <span class="media-icon video" style="background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                                    <i class="fas fa-video"></i>
+                                </span>
+                                @endif
+                                @if(isset($lesson['has_audio']) && $lesson['has_audio'])
+                                <span class="media-icon audio" style="background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                                    <i class="fas fa-volume-up"></i>
+                                </span>
+                                @endif
+                                @if(isset($lesson['has_documents']) && $lesson['has_documents'])
+                                <span class="media-icon documents" style="background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                                    <i class="fas fa-file-pdf"></i>
+                                </span>
+                                @endif
+                            </div>
+                            @endif
                         </div>
                         
-                        <a href="{{ route('lessons.show', $lesson['id']) }}" class="btn btn-primary" style="width: 100%; margin-top: auto;">View Lesson</a>
+                        <div class="lesson-info">
+                            <h3>{{ $lesson['title'] }}</h3>
+                            <p class="scripture">{{ $lesson['scripture'] }}</p>
+                            <p class="theme">{{ $lesson['theme'] }}</p>
+                            
+                            <div class="lesson-meta">
+                                <span class="age-group"><i class="fas fa-users"></i> {{ $lesson['age_group'] }}</span>
+                                <span><i class="fas fa-clock"></i> {{ $lesson['duration'] }}</span>
+                            </div>
+                            
+                            <a href="{{ route('lessons.show', $lesson['id']) }}" class="btn btn-primary" style="width: 100%; margin-top: auto;">View Lesson</a>
+                        </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
+                
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $lessons->links() }}
+                </div>
             </div>
 
             <!-- Right Sidebar -->

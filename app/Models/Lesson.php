@@ -120,4 +120,12 @@ class Lesson extends Model
     {
         return $query->where('difficulty', $difficulty);
     }
+
+    /**
+     * Get the resources for the lesson.
+     */
+    public function resources()
+    {
+        return $this->hasMany(Resource::class);
+    }
 }

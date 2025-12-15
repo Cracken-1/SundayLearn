@@ -47,11 +47,11 @@ class LessonController extends Controller
             'audio_url' => 'nullable|url|max:500',
             'thumbnail' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
             'tags' => 'nullable|string',
-            'attachments.*' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip',
+            'video_attachments.*' => 'nullable|file|max:102400|mimes:mp4,avi,mov,wmv,webm,mkv,flv',
+            'audio_attachments.*' => 'nullable|file|max:102400|mimes:mp3,wav,ogg,m4a,aac,flac,wma',
+            'document_attachments.*' => 'nullable|file|max:102400|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip,rar',
         ]);
 
         // Generate slug from title
@@ -76,31 +76,27 @@ class LessonController extends Controller
             $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
         }
 
-        // Handle file attachments
+        // Handle file attachments - separate by type
         $attachments = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $originalName = $file->getClientOriginalName();
-                $extension = $file->getClientOriginalExtension();
-                $mimeType = $file->getMimeType();
-                $size = $file->getSize();
-                
-                // Generate unique filename
-                $filename = time() . '_' . uniqid() . '_' . $originalName;
-                
-                // Store file in public/storage/lessons/attachments
-                $path = $file->storeAs('lessons/attachments', $filename, 'public');
-                
-                $attachments[] = [
-                    'name' => $originalName,
-                    'filename' => $filename,
-                    'path' => $path,
-                    'url' => asset('storage/' . $path),
-                    'type' => $extension,
-                    'mime_type' => $mimeType,
-                    'size' => $size,
-                    'uploaded_at' => now()->toDateTimeString()
-                ];
+        
+        // Handle video attachments
+        if ($request->hasFile('video_attachments')) {
+            foreach ($request->file('video_attachments') as $file) {
+                $attachments[] = $this->processFileUpload($file, 'video');
+            }
+        }
+        
+        // Handle audio attachments
+        if ($request->hasFile('audio_attachments')) {
+            foreach ($request->file('audio_attachments') as $file) {
+                $attachments[] = $this->processFileUpload($file, 'audio');
+            }
+        }
+        
+        // Handle document attachments
+        if ($request->hasFile('document_attachments')) {
+            foreach ($request->file('document_attachments') as $file) {
+                $attachments[] = $this->processFileUpload($file, 'document');
             }
         }
         
@@ -115,6 +111,32 @@ class LessonController extends Controller
 
         return redirect()->route('admin.lessons.index')
             ->with('success', 'Lesson created successfully!');
+    }
+
+    private function processFileUpload($file, $category)
+    {
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $mimeType = $file->getMimeType();
+        $size = $file->getSize();
+        
+        // Generate unique filename
+        $filename = time() . '_' . uniqid() . '_' . $originalName;
+        
+        // Store file in category-specific folder
+        $path = $file->storeAs("lessons/{$category}", $filename, 'public');
+        
+        return [
+            'name' => $originalName,
+            'filename' => $filename,
+            'path' => $path,
+            'url' => asset('storage/' . $path),
+            'type' => $extension,
+            'mime_type' => $mimeType,
+            'size' => $size,
+            'category' => $category,
+            'uploaded_at' => now()->toDateTimeString()
+        ];
     }
 
     public function show($id)
@@ -151,11 +173,11 @@ class LessonController extends Controller
             'audio_url' => 'nullable|url|max:500',
             'thumbnail' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
             'tags' => 'nullable|string',
-            'attachments.*' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip',
+            'video_attachments.*' => 'nullable|file|max:102400|mimes:mp4,avi,mov,wmv,webm,mkv,flv',
+            'audio_attachments.*' => 'nullable|file|max:102400|mimes:mp3,wav,ogg,m4a,aac,flac,wma',
+            'document_attachments.*' => 'nullable|file|max:102400|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip,rar',
         ]);
 
         // Update slug if title changed
@@ -182,31 +204,27 @@ class LessonController extends Controller
             $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
         }
 
-        // Handle new file attachments
+        // Handle new file attachments - keep existing and add new ones
         $existingAttachments = $lesson->attachments ?? [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $originalName = $file->getClientOriginalName();
-                $extension = $file->getClientOriginalExtension();
-                $mimeType = $file->getMimeType();
-                $size = $file->getSize();
-                
-                // Generate unique filename
-                $filename = time() . '_' . uniqid() . '_' . $originalName;
-                
-                // Store file in public/storage/lessons/attachments
-                $path = $file->storeAs('lessons/attachments', $filename, 'public');
-                
-                $existingAttachments[] = [
-                    'name' => $originalName,
-                    'filename' => $filename,
-                    'path' => $path,
-                    'url' => asset('storage/' . $path),
-                    'type' => $extension,
-                    'mime_type' => $mimeType,
-                    'size' => $size,
-                    'uploaded_at' => now()->toDateTimeString()
-                ];
+        
+        // Handle video attachments
+        if ($request->hasFile('video_attachments')) {
+            foreach ($request->file('video_attachments') as $file) {
+                $existingAttachments[] = $this->processFileUpload($file, 'video');
+            }
+        }
+        
+        // Handle audio attachments
+        if ($request->hasFile('audio_attachments')) {
+            foreach ($request->file('audio_attachments') as $file) {
+                $existingAttachments[] = $this->processFileUpload($file, 'audio');
+            }
+        }
+        
+        // Handle document attachments
+        if ($request->hasFile('document_attachments')) {
+            foreach ($request->file('document_attachments') as $file) {
+                $existingAttachments[] = $this->processFileUpload($file, 'document');
             }
         }
         

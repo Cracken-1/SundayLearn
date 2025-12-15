@@ -44,7 +44,7 @@
                 <h5 class="mb-0"><i class="fab fa-telegram me-2"></i>Telegram Bot Configuration</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.settings') }}">
+                <form method="POST" action="{{ route('admin.settings.telegram') }}">
                     @csrf
                     
                     <div class="mb-3">
@@ -242,54 +242,39 @@
             <div class="col-lg-6 mb-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Your Content Statistics</h5>
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>System Content Statistics</h5>
                     </div>
                     <div class="card-body">
                         @php
-                            try {
-                                $userLessons = \App\Models\Lesson::where('created_by', $currentUser->id)->count();
-                            } catch (\Exception $e) {
-                                $userLessons = 0;
-                            }
-                            try {
-                                $userBlogs = \App\Models\BlogPost::where('created_by', $currentUser->id)->count();
-                            } catch (\Exception $e) {
-                                $userBlogs = 0;
-                            }
-                            try {
-                                $userResources = class_exists(\App\Models\Resource::class) ? \App\Models\Resource::where('created_by', $currentUser->id)->count() : 0;
-                            } catch (\Exception $e) {
-                                $userResources = 0;
-                            }
-                            try {
-                                $userTips = class_exists(\App\Models\TeachingTip::class) ? \App\Models\TeachingTip::where('created_by', $currentUser->id)->count() : 0;
-                            } catch (\Exception $e) {
-                                $userTips = 0;
-                            }
+                            // Use global stats as in AdminDashboardController
+                            $totalLessons = \App\Models\Lesson::count();
+                            $totalBlogs = \App\Models\BlogPost::count();
+                            $totalResources = class_exists(\App\Models\Resource::class) ? \App\Models\Resource::count() : 0;
+                            $totalTips = class_exists(\App\Models\TeachingTip::class) ? \App\Models\TeachingTip::count() : 0;
                         @endphp
                         <div class="row text-center">
                             <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
-                                    <h3 class="text-primary mb-1">{{ $userLessons }}</h3>
-                                    <small class="text-muted">Lessons Created</small>
+                                    <h3 class="text-primary mb-1">{{ $totalLessons }}</h3>
+                                    <small class="text-muted">Total Lessons</small>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
-                                    <h3 class="text-success mb-1">{{ $userBlogs }}</h3>
-                                    <small class="text-muted">Blog Posts</small>
+                                    <h3 class="text-success mb-1">{{ $totalBlogs }}</h3>
+                                    <small class="text-muted">Total Blog Posts</small>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
-                                    <h3 class="text-info mb-1">{{ $userResources }}</h3>
-                                    <small class="text-muted">Resources</small>
+                                    <h3 class="text-info mb-1">{{ $totalResources }}</h3>
+                                    <small class="text-muted">Total Resources</small>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
-                                    <h3 class="text-warning mb-1">{{ $userTips }}</h3>
-                                    <small class="text-muted">Teaching Tips</small>
+                                    <h3 class="text-warning mb-1">{{ $totalTips }}</h3>
+                                    <small class="text-muted">Total Teaching Tips</small>
                                 </div>
                             </div>
                         </div>

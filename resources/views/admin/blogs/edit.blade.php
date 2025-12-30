@@ -19,7 +19,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.blogs.update', $blog->id) }}">
+                <form method="POST" action="{{ route('admin.blogs.update', $blog->id) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -49,6 +49,29 @@
                     <div class="mb-3">
                         <label for="content" class="form-label">Post Content</label>
                         <textarea class="form-control" id="content" name="content" rows="10">{{ $blog->content }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="featured_image" class="form-label">Featured Image</label>
+                        <input type="file" class="form-control" id="featured_image" name="featured_image">
+                        @if ($blog->featured_image)
+                            <div class="mt-2">
+                                <img src="{{ asset('storage/' . $blog->featured_image) }}" alt="Featured Image" style="max-width: 200px;">
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="video_url" class="form-label">Video</label>
+                        <input type="file" class="form-control" id="video_url" name="video_url">
+                        @if ($blog->video_url)
+                            <div class="mt-2">
+                                <video width="320" height="240" controls>
+                                    <source src="{{ asset('storage/' . $blog->video_url) }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        @endif
                     </div>
                     
                     <div class="d-flex gap-2">

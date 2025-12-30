@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
+use App\Jobs\ProcessLessonAttachment;
+use Illuminate\Support\Facades\Storage;
 
 class LessonController extends Controller
 {
@@ -76,32 +78,6 @@ class LessonController extends Controller
             $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
         }
 
-        // Handle file attachments - separate by type
-        $attachments = [];
-        
-        // Handle video attachments
-        if ($request->hasFile('video_attachments')) {
-            foreach ($request->file('video_attachments') as $file) {
-                $attachments[] = $this->processFileUpload($file, 'video');
-            }
-        }
-        
-        // Handle audio attachments
-        if ($request->hasFile('audio_attachments')) {
-            foreach ($request->file('audio_attachments') as $file) {
-                $attachments[] = $this->processFileUpload($file, 'audio');
-            }
-        }
-        
-        // Handle document attachments
-        if ($request->hasFile('document_attachments')) {
-            foreach ($request->file('document_attachments') as $file) {
-                $attachments[] = $this->processFileUpload($file, 'document');
-            }
-        }
-        
-        $validated['attachments'] = $attachments;
-
         // Set published_at if status is published
         if ($validated['status'] === 'published' && !isset($validated['published_at'])) {
             $validated['published_at'] = now();
@@ -109,34 +85,11 @@ class LessonController extends Controller
 
         $lesson = Lesson::create($validated);
 
-        return redirect()->route('admin.lessons.index')
-            ->with('success', 'Lesson created successfully!');
-    }
+        // Handle file attachments
+        $this->processAttachments($request, $lesson);
 
-    private function processFileUpload($file, $category)
-    {
-        $originalName = $file->getClientOriginalName();
-        $extension = $file->getClientOriginalExtension();
-        $mimeType = $file->getMimeType();
-        $size = $file->getSize();
-        
-        // Generate unique filename
-        $filename = time() . '_' . uniqid() . '_' . $originalName;
-        
-        // Store file in category-specific folder
-        $path = $file->storeAs("lessons/{$category}", $filename, 'public');
-        
-        return [
-            'name' => $originalName,
-            'filename' => $filename,
-            'path' => $path,
-            'url' => asset('storage/' . $path),
-            'type' => $extension,
-            'mime_type' => $mimeType,
-            'size' => $size,
-            'category' => $category,
-            'uploaded_at' => now()->toDateTimeString()
-        ];
+        return redirect()->route('admin.lessons.index')
+            ->with('success', 'Lesson created successfully! Attachments are being processed in the background.');
     }
 
     public function show($id)
@@ -204,32 +157,6 @@ class LessonController extends Controller
             $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
         }
 
-        // Handle new file attachments - keep existing and add new ones
-        $existingAttachments = $lesson->attachments ?? [];
-        
-        // Handle video attachments
-        if ($request->hasFile('video_attachments')) {
-            foreach ($request->file('video_attachments') as $file) {
-                $existingAttachments[] = $this->processFileUpload($file, 'video');
-            }
-        }
-        
-        // Handle audio attachments
-        if ($request->hasFile('audio_attachments')) {
-            foreach ($request->file('audio_attachments') as $file) {
-                $existingAttachments[] = $this->processFileUpload($file, 'audio');
-            }
-        }
-        
-        // Handle document attachments
-        if ($request->hasFile('document_attachments')) {
-            foreach ($request->file('document_attachments') as $file) {
-                $existingAttachments[] = $this->processFileUpload($file, 'document');
-            }
-        }
-        
-        $validated['attachments'] = $existingAttachments;
-
         // Set published_at if status changed to published
         if ($validated['status'] === 'published' && $lesson->status !== 'published') {
             $validated['published_at'] = now();
@@ -237,19 +164,22 @@ class LessonController extends Controller
 
         $lesson->update($validated);
 
+        // Handle new file attachments
+        $this->processAttachments($request, $lesson);
+
         return redirect()->route('admin.lessons.index')
-            ->with('success', 'Lesson updated successfully!');
+            ->with('success', 'Lesson updated successfully! New attachments are being processed in the background.');
     }
 
     public function destroy($id)
     {
         $lesson = Lesson::findOrFail($id);
         
-        // Delete all attachment files
+        // Delete all attachment files from storage
         if (!empty($lesson->attachments)) {
             foreach ($lesson->attachments as $attachment) {
                 if (isset($attachment['path'])) {
-                    \Storage::disk('public')->delete($attachment['path']);
+                    Storage::disk('public')->delete($attachment['path']);
                 }
             }
         }
@@ -268,7 +198,7 @@ class LessonController extends Controller
         if (isset($attachments[$index])) {
             // Delete the file from storage
             if (isset($attachments[$index]['path'])) {
-                \Storage::disk('public')->delete($attachments[$index]['path']);
+                Storage::disk('public')->delete($attachments[$index]['path']);
             }
             
             // Remove from array
@@ -281,5 +211,21 @@ class LessonController extends Controller
         }
         
         return response()->json(['success' => false, 'message' => 'Attachment not found'], 404);
+    }
+
+    private function processAttachments(Request $request, Lesson $lesson)
+    {
+        $attachmentTypes = ['video_attachments', 'audio_attachments', 'document_attachments'];
+
+        foreach ($attachmentTypes as $type) {
+            if ($request->hasFile($type)) {
+                $category = str_replace('_attachments', '', $type);
+                foreach ($request->file($type) as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $tempPath = $file->store('temp', 'local');
+                    ProcessLessonAttachment::dispatch($lesson, storage_path('app/' . $tempPath), $originalName, $category);
+                }
+            }
+        }
     }
 }

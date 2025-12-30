@@ -22,6 +22,21 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
+                @if ($blog->featured_image)
+                    <div class="mb-4">
+                        <img src="{{ asset('storage/' . $blog->featured_image) }}" alt="Featured Image" class="img-fluid rounded">
+                    </div>
+                @endif
+
+                @if ($blog->video_url)
+                    <div class="mb-4">
+                        <video width="100%" controls>
+                            <source src="{{ asset('storage/' . $blog->video_url) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                @endif
+
                 <h5>Post Content</h5>
                 <p>{{ $blog->content }}</p>
             </div>

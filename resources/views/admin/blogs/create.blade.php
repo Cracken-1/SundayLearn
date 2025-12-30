@@ -19,7 +19,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.blogs.store') }}">
+                <form method="POST" action="{{ route('admin.blogs.store') }}" enctype="multipart/form-data">
                     @csrf
                     
                     <div class="mb-3">
@@ -53,6 +53,16 @@
                     <div class="mb-3">
                         <label for="content" class="form-label">Post Content</label>
                         <textarea class="form-control" id="content" name="content" rows="10"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="featured_image" class="form-label">Featured Image</label>
+                        <input type="file" class="form-control" id="featured_image" name="featured_image">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="video_url" class="form-label">Video URL</label>
+                        <input type="file" class="form-control" id="video_url" name="video_url">
                     </div>
                     
                     <div class="d-flex gap-2">

@@ -13,6 +13,7 @@ class BlogPost extends Model
         'content',
         'author',
         'image_url',
+        'video_url',
         'category',
         'tags',
         'meta_title',

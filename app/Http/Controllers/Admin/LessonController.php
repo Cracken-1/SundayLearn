@@ -4,23 +4,27 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
+use App\Services\SupabaseStorageService;
 use Illuminate\Http\Request;
-use App\Jobs\ProcessLessonAttachment;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LessonController extends Controller
 {
+    protected $storageService;
+
+    public function __construct(SupabaseStorageService $storageService)
+    {
+        $this->storageService = $storageService;
+    }
+
     public function index()
     {
         $lessons = Lesson::orderBy('created_at', 'desc')->paginate(20);
-        
         $stats = [
             'total' => Lesson::count(),
             'published' => Lesson::where('status', 'published')->count(),
             'drafts' => Lesson::where('status', 'draft')->count(),
-            'this_month' => Lesson::whereMonth('created_at', now()->month)->count()
         ];
-
         return view('admin.lessons.index', compact('lessons', 'stats'));
     }
 
@@ -31,201 +35,160 @@ class LessonController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'age_group' => 'required|string',
-            'category' => 'nullable|string',
-            'difficulty' => 'nullable|string',
-            'status' => 'required|in:draft,published',
-            'content' => 'required|string',
-            'scripture' => 'nullable|string|max:255',
-            'theme' => 'nullable|string|max:255',
-            'duration' => 'nullable|integer|min:1',
-            'excerpt' => 'nullable|string',
-            'overview' => 'nullable|string',
-            'objectives' => 'nullable|string',
-            'discussion_questions' => 'nullable|string',
-            'video_url' => 'nullable|url|max:500',
-            'audio_url' => 'nullable|url|max:500',
-            'thumbnail' => 'nullable|string|max:500',
-            'image_url' => 'nullable|string|max:500',
-            'is_featured' => 'nullable|boolean',
-            'tags' => 'nullable|string',
-            'video_attachments.*' => 'nullable|file|max:102400|mimes:mp4,avi,mov,wmv,webm,mkv,flv',
-            'audio_attachments.*' => 'nullable|file|max:102400|mimes:mp3,wav,ogg,m4a,aac,flac,wma',
-            'document_attachments.*' => 'nullable|file|max:102400|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip,rar',
-        ]);
+        $validated = $this->validateLesson($request);
 
-        // Generate slug from title
-        $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
-        
-        // Ensure unique slug
-        $originalSlug = $validated['slug'];
-        $counter = 1;
-        while (Lesson::where('slug', $validated['slug'])->exists()) {
-            $validated['slug'] = $originalSlug . '-' . $counter;
-            $counter++;
-        }
+        $validated['slug'] = $this->generateUniqueSlug($validated['title']);
 
-        // Convert string fields to arrays for JSON columns
-        if (isset($validated['objectives'])) {
-            $validated['objectives'] = array_filter(array_map('trim', explode("\n", $validated['objectives'])));
-        }
-        if (isset($validated['discussion_questions'])) {
-            $validated['discussion_questions'] = array_filter(array_map('trim', explode("\n", $validated['discussion_questions'])));
-        }
-        if (isset($validated['tags'])) {
-            $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
-        }
+        // Process textual data that needs to be stored as JSON
+        $this->processJsonFields($validated);
 
-        // Set published_at if status is published
-        if ($validated['status'] === 'published' && !isset($validated['published_at'])) {
+        if ($validated['status'] === 'published') {
             $validated['published_at'] = now();
         }
 
+        // Handle attachments from Supabase
+        $validated['attachments'] = $this->processAttachments($request);
+
         $lesson = Lesson::create($validated);
 
-        // Handle file attachments
-        $this->processAttachments($request, $lesson);
-
-        return redirect()->route('admin.lessons.index')
-            ->with('success', 'Lesson created successfully! Attachments are being processed in the background.');
+        return redirect()->route('admin.lessons.index')->with('success', 'Lesson created successfully.');
     }
 
-    public function show($id)
+    public function edit(Lesson $lesson)
     {
-        $lesson = Lesson::findOrFail($id);
-        return view('admin.lessons.show', compact('lesson'));
-    }
-
-    public function edit($id)
-    {
-        $lesson = Lesson::findOrFail($id);
         return view('admin.lessons.edit', compact('lesson'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Lesson $lesson)
     {
-        $lesson = Lesson::findOrFail($id);
-        
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'age_group' => 'required|string',
-            'category' => 'nullable|string',
-            'difficulty' => 'nullable|string',
-            'status' => 'required|in:draft,published',
-            'content' => 'required|string',
-            'scripture' => 'nullable|string|max:255',
-            'theme' => 'nullable|string|max:255',
-            'duration' => 'nullable|integer|min:1',
-            'excerpt' => 'nullable|string',
-            'overview' => 'nullable|string',
-            'objectives' => 'nullable|string',
-            'discussion_questions' => 'nullable|string',
-            'video_url' => 'nullable|url|max:500',
-            'audio_url' => 'nullable|url|max:500',
-            'thumbnail' => 'nullable|string|max:500',
-            'image_url' => 'nullable|string|max:500',
-            'is_featured' => 'nullable|boolean',
-            'tags' => 'nullable|string',
-            'video_attachments.*' => 'nullable|file|max:102400|mimes:mp4,avi,mov,wmv,webm,mkv,flv',
-            'audio_attachments.*' => 'nullable|file|max:102400|mimes:mp3,wav,ogg,m4a,aac,flac,wma',
-            'document_attachments.*' => 'nullable|file|max:102400|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,jpg,jpeg,png,gif,zip,rar',
-        ]);
+        $validated = $this->validateLesson($request, $lesson->id);
 
-        // Update slug if title changed
         if ($validated['title'] !== $lesson->title) {
-            $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
-            
-            // Ensure unique slug (excluding current lesson)
-            $originalSlug = $validated['slug'];
-            $counter = 1;
-            while (Lesson::where('slug', $validated['slug'])->where('id', '!=', $lesson->id)->exists()) {
-                $validated['slug'] = $originalSlug . '-' . $counter;
-                $counter++;
-            }
+            $validated['slug'] = $this->generateUniqueSlug($validated['title'], $lesson->id);
         }
 
-        // Convert string fields to arrays for JSON columns
-        if (isset($validated['objectives'])) {
-            $validated['objectives'] = array_filter(array_map('trim', explode("\n", $validated['objectives'])));
-        }
-        if (isset($validated['discussion_questions'])) {
-            $validated['discussion_questions'] = array_filter(array_map('trim', explode("\n", $validated['discussion_questions'])));
-        }
-        if (isset($validated['tags'])) {
-            $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
-        }
+        $this->processJsonFields($validated);
 
-        // Set published_at if status changed to published
         if ($validated['status'] === 'published' && $lesson->status !== 'published') {
             $validated['published_at'] = now();
         }
 
+        // Merge new attachments with existing ones
+        $newAttachments = $this->processAttachments($request);
+        $existingAttachments = $lesson->attachments ?? [];
+        $validated['attachments'] = array_merge($existingAttachments, $newAttachments);
+
         $lesson->update($validated);
 
-        // Handle new file attachments
-        $this->processAttachments($request, $lesson);
-
-        return redirect()->route('admin.lessons.index')
-            ->with('success', 'Lesson updated successfully! New attachments are being processed in the background.');
+        return redirect()->route('admin.lessons.index')->with('success', 'Lesson updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Lesson $lesson)
     {
-        $lesson = Lesson::findOrFail($id);
-        
-        // Delete all attachment files from storage
+        // Delete all attachments from Supabase
         if (!empty($lesson->attachments)) {
             foreach ($lesson->attachments as $attachment) {
                 if (isset($attachment['path'])) {
-                    Storage::disk('public')->delete($attachment['path']);
+                    $this->storageService->delete($attachment['path'], 'lessons-attachments');
                 }
             }
         }
-        
+
         $lesson->delete();
-        
-        return redirect()->route('admin.lessons.index')
-            ->with('success', 'Lesson deleted successfully!');
+
+        return redirect()->route('admin.lessons.index')->with('success', 'Lesson deleted successfully.');
     }
-    
+
     public function removeAttachment($id, $index)
     {
         $lesson = Lesson::findOrFail($id);
         $attachments = $lesson->attachments ?? [];
-        
+
         if (isset($attachments[$index])) {
-            // Delete the file from storage
+            // Delete from Supabase
             if (isset($attachments[$index]['path'])) {
-                Storage::disk('public')->delete($attachments[$index]['path']);
+                $this->storageService->delete($attachments[$index]['path'], 'lessons-attachments');
             }
-            
-            // Remove from array
+
             array_splice($attachments, $index, 1);
-            
-            // Update lesson
             $lesson->update(['attachments' => $attachments]);
-            
-            return response()->json(['success' => true, 'message' => 'Attachment removed successfully']);
+
+            return response()->json(['success' => true, 'message' => 'Attachment removed.']);
         }
-        
-        return response()->json(['success' => false, 'message' => 'Attachment not found'], 404);
+
+        return response()->json(['success' => false, 'message' => 'Attachment not found.'], 404);
     }
 
-    private function processAttachments(Request $request, Lesson $lesson)
+    private function validateLesson(Request $request, $lessonId = null)
     {
-        $attachmentTypes = ['video_attachments', 'audio_attachments', 'document_attachments'];
+        $rules = [
+            'title' => 'required|string|max:255',
+            'status' => 'required|in:draft,published',
+            'content' => 'required|string',
+            'age_group' => 'nullable|string',
+            'category' => 'nullable|string',
+            'excerpt' => 'nullable|string',
+            'video_attachments' => 'nullable|array',
+            'audio_attachments' => 'nullable|array',
+            'document_attachments' => 'nullable|array',
+        ];
 
-        foreach ($attachmentTypes as $type) {
-            if ($request->hasFile($type)) {
-                $category = str_replace('_attachments', '', $type);
-                foreach ($request->file($type) as $file) {
-                    $originalName = $file->getClientOriginalName();
-                    $tempPath = $file->store('temp', 'local');
-                    ProcessLessonAttachment::dispatch($lesson, storage_path('app/' . $tempPath), $originalName, $category);
+        return $request->validate($rules);
+    }
+
+    private function generateUniqueSlug($title, $excludeId = null)
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        $query = Lesson::where('slug', $slug);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        while ($query->exists()) {
+            $slug = $originalSlug . '-' . $counter++;
+            $query = Lesson::where('slug', $slug);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+        }
+
+        return $slug;
+    }
+
+    private function processJsonFields(&$validated)
+    {
+        // Example for a 'tags' field if you add it back
+        if (isset($validated['tags'])) {
+            $validated['tags'] = array_filter(array_map('trim', explode(',', $validated['tags'])));
+        }
+    }
+
+    private function processAttachments(Request $request)
+    {
+        $attachments = [];
+        $types = ['video_attachments', 'audio_attachments', 'document_attachments'];
+
+        foreach ($types as $type) {
+            if ($request->has($type)) {
+                foreach ($request->input($type) as $fileData) {
+                    // The input is expected to be a JSON string of file details
+                    $data = json_decode($fileData, true);
+                    if ($data && isset($data['path'])) {
+                        $attachments[] = [
+                            'type' => str_replace('_attachments', '', $type),
+                            'path' => $data['path'],
+                            'url' => $data['url'],
+                            'filename' => $data['filename'],
+                            'size' => $data['file_size'],
+                        ];
+                    }
                 }
             }
         }
+
+        return $attachments;
     }
 }

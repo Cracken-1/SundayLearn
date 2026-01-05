@@ -1,16 +1,7 @@
--- ============================================
--- Sunday School Platform - Complete Database Schema
--- For InfinityFree MySQL Database (Updated with Video Support)
--- ============================================
 
--- Set character set
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
--- ============================================
--- Table: users
--- Purpose: Store regular user accounts (Laravel default)
--- ============================================
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -26,10 +17,6 @@ CREATE TABLE `users` (
   INDEX `idx_users_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Regular user accounts';
 
--- ============================================
--- Table: personal_access_tokens
--- Purpose: Laravel Sanctum API tokens
--- ============================================
 DROP TABLE IF EXISTS `personal_access_tokens`;
 CREATE TABLE `personal_access_tokens` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -45,10 +32,6 @@ CREATE TABLE `personal_access_tokens` (
   INDEX `idx_personal_access_tokens_tokenable` (`tokenable_type`, `tokenable_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API access tokens';
 
--- ============================================
--- Table: admin_users
--- Purpose: Store admin user accounts
--- ============================================
 DROP TABLE IF EXISTS `admin_users`;
 CREATE TABLE `admin_users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -70,10 +53,6 @@ CREATE TABLE `admin_users` (
   FOREIGN KEY `fk_admin_users_created_by` (`created_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Admin user accounts';
 
--- ============================================
--- Table: lessons
--- Purpose: Store Sunday School lessons
--- ============================================
 DROP TABLE IF EXISTS `lessons`;
 CREATE TABLE `lessons` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -119,10 +98,6 @@ CREATE TABLE `lessons` (
   INDEX `idx_lessons_category_status` (`category`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Sunday School lessons with video support';
 
--- ============================================
--- Table: blog_posts
--- Purpose: Store blog articles
--- ============================================
 DROP TABLE IF EXISTS `blog_posts`;
 CREATE TABLE `blog_posts` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -152,10 +127,6 @@ CREATE TABLE `blog_posts` (
   FULLTEXT INDEX `idx_blog_posts_search` (`title`, `content`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Blog posts';
 
--- ============================================
--- Table: telegram_raw_imports
--- Purpose: Store raw data from Telegram bot
--- ============================================
 DROP TABLE IF EXISTS `telegram_raw_imports`;
 CREATE TABLE `telegram_raw_imports` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -191,10 +162,6 @@ CREATE TABLE `telegram_raw_imports` (
   FOREIGN KEY `fk_telegram_imports_lesson_id` (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Telegram bot imports';
 
--- ============================================
--- Table: admin_activities
--- Purpose: Track admin user activities
--- ============================================
 DROP TABLE IF EXISTS `admin_activities`;
 CREATE TABLE `admin_activities` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -212,10 +179,6 @@ CREATE TABLE `admin_activities` (
   INDEX `idx_admin_activities_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Admin activity log';
 
--- ============================================
--- Table: events
--- Purpose: Store church events, holidays, and special occasions
--- ============================================
 DROP TABLE IF EXISTS `events`;
 CREATE TABLE `events` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -235,10 +198,6 @@ CREATE TABLE `events` (
   INDEX `idx_events_display_order` (`display_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Church events and holidays';
 
--- ============================================
--- Table: teaching_tips
--- Purpose: Store helpful teaching tips and advice for Sunday school teachers
--- ============================================
 DROP TABLE IF EXISTS `teaching_tips`;
 CREATE TABLE `teaching_tips` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -255,10 +214,6 @@ CREATE TABLE `teaching_tips` (
   INDEX `idx_teaching_tips_display_order` (`display_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Teaching tips and advice';
 
--- ============================================
--- Table: resources (UPDATED WITH VIDEO SUPPORT)
--- Purpose: Store downloadable teaching resources including video content
--- ============================================
 DROP TABLE IF EXISTS `resources`;
 CREATE TABLE `resources` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -288,10 +243,6 @@ CREATE TABLE `resources` (
   FOREIGN KEY `fk_resources_lesson_id` (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Downloadable teaching resources with video support';
 
--- ============================================
--- Table: newsletters
--- Purpose: Store newsletter subscriber information
--- ============================================
 DROP TABLE IF EXISTS `newsletters`;
 CREATE TABLE `newsletters` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -308,10 +259,6 @@ CREATE TABLE `newsletters` (
   INDEX `idx_newsletters_token` (`unsubscribe_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Newsletter subscribers';
 
--- ============================================
--- Table: analytics
--- Purpose: Track website analytics and user interactions
--- ============================================
 DROP TABLE IF EXISTS `analytics`;
 CREATE TABLE `analytics` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -344,10 +291,6 @@ CREATE TABLE `analytics` (
   INDEX `idx_analytics_category_date` (`event_category`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Website analytics and user interactions';
 
--- ============================================
--- Table: migrations
--- Purpose: Laravel migration tracking
--- ============================================
 DROP TABLE IF EXISTS `migrations`;
 CREATE TABLE `migrations` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -355,14 +298,7 @@ CREATE TABLE `migrations` (
   `batch` INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Laravel migrations';
 
--- ============================================
--- Insert ONLY Essential Data (Admin User Only)
--- ============================================
 
--- Insert default admin user
--- Email: admin@sundaylearn.com
--- Password: password (CHANGE THIS IMMEDIATELY!)
-INSERT INTO `admin_users` (`name`, `email`, `password`, `role`, `is_active`, `created_at`, `updated_at`) 
 VALUES (
   'Admin User',
   'admin@sundaylearn.com',
@@ -373,8 +309,6 @@ VALUES (
   NOW()
 );
 
--- Insert migration records
-INSERT INTO `migrations` (`migration`, `batch`) VALUES
 ('2019_12_14_000001_create_personal_access_tokens_table', 1),
 ('2024_01_01_000001_create_users_table', 2),
 ('2024_12_06_000001_create_telegram_raw_imports_table', 1),
@@ -391,31 +325,5 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES
 ('2025_12_11_000001_create_analytics_table', 7),
 ('2025_12_15_072903_add_lesson_id_to_resources_table', 8);
 
--- ============================================
--- Enable foreign key checks
--- ============================================
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================
--- IMPORTANT NOTES
--- ============================================
--- 1. Default admin credentials:
---    Email: admin@sundaylearn.com
---    Password: password
---    CHANGE THIS IMMEDIATELY AFTER FIRST LOGIN!
---
--- 2. UPDATED FEATURES:
---    - Video support in resources (type: 'video')
---    - Enhanced lesson attachments support video/audio files
---    - Performance indexes added for better query speed
---    - File size limits increased to 50MB for media files
---
--- 3. SUPPORTED FILE TYPES:
---    - Lessons: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, JPEG, PNG, GIF, ZIP, MP4, AVI, MOV, WMV, WebM, MP3, WAV, OGG, M4A
---    - Resources: Same as lessons + video type classification
---
--- 4. This schema contains NO sample data
--- 5. All tables are empty except admin_users and migrations
--- 6. Ready for production use with video support
--- 7. Database size: ~1MB (minimal)
--- ============================================

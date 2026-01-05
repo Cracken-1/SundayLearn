@@ -37,50 +37,8 @@
     <div class="tab-pane fade show active" id="system" role="tabpanel">
 
 <div class="row">
-    <!-- Telegram Configuration -->
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fab fa-telegram me-2"></i>Telegram Bot Configuration</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ route('admin.settings.telegram') }}">
-                    @csrf
-                    
-                    <div class="mb-3">
-                        <label for="telegram_bot_token" class="form-label">Bot Token</label>
-                        <input type="text" class="form-control" id="telegram_bot_token" name="telegram_bot_token" 
-                               value="{{ config('telegram.bot_token') ? '***' . substr(config('telegram.bot_token'), -8) : '' }}"
-                               placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
-                        <div class="form-text">Get this from @BotFather on Telegram</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="telegram_channel_id" class="form-label">Channel ID</label>
-                        <input type="text" class="form-control" id="telegram_channel_id" name="telegram_channel_id" 
-                               value="{{ config('telegram.channel_id') }}"
-                               placeholder="@your_channel or -100123456789">
-                        <div class="form-text">Your Telegram channel username or ID</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="telegram_webhook_url" class="form-label">Webhook URL</label>
-                        <input type="url" class="form-control" id="telegram_webhook_url" name="telegram_webhook_url" 
-                               value="{{ config('telegram.webhook_url') }}"
-                               placeholder="https://yourdomain.com/api/telegram/webhook">
-                        <div class="form-text">Must be HTTPS for Telegram webhooks</div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Telegram Settings
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
     <!-- System Information -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-lg-12 mb-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h5>

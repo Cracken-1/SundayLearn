@@ -24,7 +24,6 @@ Route::get('/about', [App\Http\Controllers\PageController::class, 'about'])->nam
 Route::get('/resources', [App\Http\Controllers\ResourceController::class, 'index'])->name('resources.index');
 Route::get('/resources/{id}/download', [App\Http\Controllers\ResourceController::class, 'download'])->name('resources.download');
 
-
 // Admin authentication routes (outside middleware)
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLogin'])->name('login');
@@ -50,12 +49,15 @@ Route::prefix('admin')->name('admin.')->middleware(['admin.auth', 'prevent.back.
     // Lessons Management
     Route::resource('lessons', App\Http\Controllers\Admin\LessonController::class)->middleware('large.uploads');
     Route::delete('/lessons/{lesson}/attachments/{index}', [App\Http\Controllers\Admin\LessonController::class, 'removeAttachment'])->name('lessons.remove-attachment');
-    
+    Route::post('/lessons/upload', [App\Http\Controllers\Admin\FileUploadController::class, 'upload'])->name('lessons.upload');
+    Route::post('/lessons/upload/complete', [App\Http\Controllers\Admin\FileUploadController::class, 'complete'])->name('lessons.upload.complete');
+
     // Blog Management
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     
     // Telegram Imports
     Route::get('/telegram-imports', [App\Http\Controllers\Admin\TelegramImportController::class, 'index'])->name('telegram-imports.index');
+    Route::post('/telegram-imports/import', [App\Http\Controllers\Admin\TelegramImportController::class, 'import'])->name('telegram-imports.import');
     Route::get('/telegram-imports/{import}', [App\Http\Controllers\Admin\TelegramImportController::class, 'show'])->name('telegram-imports.show');
     
     // Analytics
@@ -97,6 +99,6 @@ Route::prefix('admin')->name('admin.')->middleware(['admin.auth', 'prevent.back.
     Route::post('/settings/clear-cache', [App\Http\Controllers\Admin\SettingsController::class, 'clearCache'])->name('settings.clear-cache');
     Route::post('/settings/optimize', [App\Http\Controllers\Admin\SettingsController::class, 'optimizeApp'])->name('settings.optimize');
     Route::post('/settings/migrate', [App\Http\Controllers\Admin\SettingsController::class, 'runMigrations'])->name('settings.migrate');
-    Route::post('/settings/telegram', [App\Http\Controllers\Admin\SettingsController::class, 'updateTelegramSettings'])->name('settings.telegram');
+    Route::post('settings/telegram', [App\Http\Controllers\Admin\SettingsController::class, 'updateTelegramSettings'])->name('settings.telegram');
     Route::post('/settings/cleanup', [App\Http\Controllers\Admin\SettingsController::class, 'cleanupStorage'])->name('settings.cleanup');
 });

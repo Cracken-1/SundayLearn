@@ -2,249 +2,186 @@
 
 @section('title', 'Edit Lesson - Admin')
 
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-0">Edit Lesson</h1>
-        <p class="text-muted">Update lesson content</p>
-    </div>
-    <div>
-        <a href="{{ route('admin.lessons.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Lessons
-        </a>
-    </div>
-</div>
+@push('styles')
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+@endpush
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-body">
-                <form method="POST" action="{{ route('admin.lessons.update', $lesson->id) }}" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Lesson Title</label>
-                        <input type="text" class="form-control" id="title" name="title" value="{{ $lesson->title }}" required>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="age_group" class="form-label">Age Group</label>
-                                <select class="form-select" id="age_group" name="age_group" required>
-                                    <option value="">Select Age Group</option>
-                                    <option value="3-5" {{ $lesson->age_group === '3-5' ? 'selected' : '' }}>Ages 3-5</option>
-                                    <option value="6-8" {{ $lesson->age_group === '6-8' ? 'selected' : '' }}>Ages 6-8</option>
-                                    <option value="9-12" {{ $lesson->age_group === '9-12' ? 'selected' : '' }}>Ages 9-12</option>
-                                    <option value="teen" {{ $lesson->age_group === 'teen' ? 'selected' : '' }}>Teen</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <select class="form-select" id="status" name="status" required>
-                                    <option value="draft" {{ $lesson->status === 'draft' ? 'selected' : '' }}>Draft</option>
-                                    <option value="published" {{ $lesson->status === 'published' ? 'selected' : '' }}>Published</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="content" class="form-label">Lesson Content</label>
-                        <textarea class="form-control" id="content" name="content" rows="10">{{ $lesson->content }}</textarea>
-                    </div>
-                    
-                    <hr class="my-4">
-                    
-                    <!-- Existing Attachments -->
-                    @if(!empty($lesson->attachments) && count($lesson->attachments) > 0)
-                    <h5 class="mb-3">Current Attachments</h5>
-                    <div class="mb-3">
-                        <div class="list-group" id="existing-attachments">
-                            @foreach($lesson->attachments as $index => $attachment)
-                            <div class="list-group-item d-flex justify-content-between align-items-center" data-index="{{ $index }}">
-                                <div>
-                                    @php
-                                        $type = strtolower($attachment['type'] ?? 'file');
-                                        $iconClass = match($type) {
-                                            'pdf' => 'fas fa-file-pdf text-danger',
-                                            'doc', 'docx' => 'fas fa-file-word text-primary',
-                                            'xls', 'xlsx' => 'fas fa-file-excel text-success',
-                                            'ppt', 'pptx' => 'fas fa-file-powerpoint text-warning',
-                                            'txt' => 'fas fa-file-alt text-secondary',
-                                            'jpg', 'jpeg', 'png', 'gif' => 'fas fa-file-image text-info',
-                                            'zip' => 'fas fa-file-archive text-dark',
-                                            default => 'fas fa-file text-secondary'
-                                        };
-                                    @endphp
-                                    <i class="{{ $iconClass }}" style="margin-right: 0.5rem;"></i>
-                                    <strong>{{ $attachment['name'] ?? 'Attachment' }}</strong>
-                                    <span class="text-muted ms-2">
-                                        ({{ strtoupper($attachment['type'] ?? 'FILE') }}
-                                        @if(isset($attachment['size']))
-                                            - {{ number_format($attachment['size'] / 1024 / 1024, 2) }} MB
-                                        @endif)
-                                    </span>
-                                </div>
-                                <div>
-                                    <a href="{{ $attachment['url'] ?? '#' }}" class="btn btn-sm btn-primary me-2" download>
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger remove-attachment" data-index="{{ $index }}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-                    
-                    <!-- Add New Attachments -->
-                    <h5 class="mb-3">Add New Attachments</h5>
-                    <div class="mb-3">
-                        <label for="attachments" class="form-label">Upload Files (PDF, DOCX, Images, etc.)</label>
-                        <input type="file" class="form-control @error('attachments.*') is-invalid @enderror" 
-                               id="attachments" name="attachments[]" multiple 
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip">
-                        <small class="text-muted">
-                            Supported formats: PDF, Word, Excel, PowerPoint, Images, Text, ZIP (Max 10MB per file)
-                        </small>
-                        @error('attachments.*')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div id="attachment-preview" class="mb-3" style="display: none;">
-                        <label class="form-label">New Files to Upload:</label>
-                        <div id="attachment-list" class="list-group"></div>
-                    </div>
-                    
-                    <hr class="my-4">
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Update Lesson
-                        </button>
-                        <a href="{{ route('admin.lessons.index') }}" class="btn btn-secondary">
-                            Cancel
-                        </a>
-                    </div>
-                </form>
-            </div>
+@section('content')
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Edit Lesson</h1>
+            <p class="text-muted">Update the details for "{{ $lesson->title }}".</p>
+        </div>
+        <div>
+            <a href="{{ route('admin.lessons.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Lessons
+            </a>
         </div>
     </div>
-    
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Lesson Info</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>ID:</strong> {{ $lesson->id }}</p>
-                <p><strong>Created:</strong> {{ $lesson->created_at ?? 'N/A' }}</p>
-                <p><strong>Last Updated:</strong> {{ $lesson->updated_at ?? 'N/A' }}</p>
-            </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ route('admin.lessons.update', $lesson->id) }}" id="edit-lesson-form">
+                @csrf
+                @method('PUT')
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Lesson Title *</label>
+                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $lesson->title) }}" required>
+                            @error('title')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Main Content *</label>
+                            <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content" rows="15">{{ old('content', $lesson->content) }}</textarea>
+                            @error('content')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Lesson Properties</h5>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="draft" {{ old('status', $lesson->status) == 'draft' ? 'selected' : '' }}>Draft</option>
+                                        <option value="published" {{ old('status', $lesson->status) == 'published' ? 'selected' : '' }}>Published</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="age_group" class="form-label">Age Group</label>
+                                    <input type="text" class="form-control" id="age_group" name="age_group" value="{{ old('age_group', $lesson->age_group) }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Category</label>
+                                    <input type="text" class="form-control" id="category" name="category" value="{{ old('category', $lesson->category) }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="mb-3">Manage Attachments</h5>
+                <div id="existing-attachments">
+                    <h6>Existing Files:</h6>
+                    @if($lesson->attachments && count($lesson->attachments) > 0)
+                        <ul class="list-group mb-3">
+                            @foreach($lesson->attachments as $index => $attachment)
+                                <li class="list-group-item d-flex justify-content-between align-items-center" id="attachment-item-{{ $index }}">
+                                    <a href="{{ $attachment['url'] }}" target="_blank">{{ $attachment['filename'] }}</a>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeAttachment({{ $lesson->id }}, {{ $index }})">Remove</button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p>No attachments yet.</p>
+                    @endif
+                </div>
+
+                <h5 class="mb-3">Add New Attachments</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Video Attachments</label>
+                        <input type="file" class="filepond" name="video_attachments" id="video-uploader" multiple data-file-type="video">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Audio Attachments</label>
+                        <input type="file" class="filepond" name="audio_attachments" id="audio-uploader" multiple data-file-type="audio">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Documents & Other</label>
+                        <input type="file" class="filepond" name="document_attachments" id="document-uploader" multiple data-file-type="document">
+                    </div>
+                </div>
+
+                <div id="attachments-hidden-inputs"></div>
+
+                <div class="mt-4 text-end">
+                    <button type="submit" class="btn btn-primary">Update Lesson</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
-<script>
-// File preview for new attachments
-document.getElementById('attachments').addEventListener('change', function(e) {
-    const files = Array.from(e.target.files);
-    const preview = document.getElementById('attachment-preview');
-    const list = document.getElementById('attachment-list');
-    
-    if (files.length > 0) {
-        preview.style.display = 'block';
-        list.innerHTML = '';
-        
-        files.forEach((file, index) => {
-            const fileSize = (file.size / 1024 / 1024).toFixed(2);
-            const fileIcon = getFileIcon(file.name);
-            
-            const item = document.createElement('div');
-            item.className = 'list-group-item d-flex justify-content-between align-items-center';
-            item.innerHTML = `
-                <div>
-                    <i class="${fileIcon}" style="margin-right: 0.5rem;"></i>
-                    <strong>${file.name}</strong>
-                    <span class="text-muted ms-2">(${fileSize} MB)</span>
-                </div>
-                <span class="badge bg-success">New</span>
-            `;
-            list.appendChild(item);
-        });
-    } else {
-        preview.style.display = 'none';
-    }
-});
+    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        FilePond.registerPlugin();
 
-// Remove existing attachment
-document.querySelectorAll('.remove-attachment').forEach(button => {
-    button.addEventListener('click', function() {
-        const index = this.dataset.index;
-        const lessonId = {{ $lesson->id }};
-        
-        if (confirm('Are you sure you want to remove this attachment?')) {
+        const setupFilePond = (selector, fileType) => {
+            const inputElement = document.querySelector(selector);
+            FilePond.create(inputElement, {
+                allowMultiple: true,
+                server: {
+                    url: '{{ route("admin.lessons.upload") }}',
+                    process: {
+                        url: '',
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        ondata: (formData) => {
+                            formData.append('fileType', fileType);
+                            return formData;
+                        },
+                        onload: (response) => {
+                            const res = JSON.parse(response);
+                            if (res.success) {
+                                addHiddenInput(fileType, res);
+                                return res.path;
+                            }
+                            return null;
+                        }
+                    }
+                }
+            });
+        };
+
+        const addHiddenInput = (type, fileData) => {
+            const container = document.getElementById('attachments-hidden-inputs');
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `${type}_attachments[]`;
+            input.value = JSON.stringify(fileData);
+            container.appendChild(input);
+        };
+
+        window.removeAttachment = (lessonId, index) => {
+            if (!confirm('Are you sure you want to remove this attachment?')) return;
+
             fetch(`/admin/lessons/${lessonId}/attachments/${index}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Accept': 'application/json'
                 }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Remove the item from DOM
-                    this.closest('.list-group-item').remove();
-                    
-                    // Check if there are no more attachments
-                    const container = document.getElementById('existing-attachments');
-                    if (container && container.children.length === 0) {
-                        container.closest('.mb-3').previousElementSibling.remove(); // Remove h5
-                        container.closest('.mb-3').remove(); // Remove container
-                    }
-                    
-                    alert('Attachment removed successfully');
+                    document.getElementById(`attachment-item-${index}`).remove();
+                    alert(data.message);
                 } else {
-                    alert('Error removing attachment: ' + data.message);
+                    alert('Failed to remove attachment.');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error removing attachment');
             });
-        }
-    });
-});
+        };
 
-function getFileIcon(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const icons = {
-        'pdf': 'fas fa-file-pdf text-danger',
-        'doc': 'fas fa-file-word text-primary',
-        'docx': 'fas fa-file-word text-primary',
-        'xls': 'fas fa-file-excel text-success',
-        'xlsx': 'fas fa-file-excel text-success',
-        'ppt': 'fas fa-file-powerpoint text-warning',
-        'pptx': 'fas fa-file-powerpoint text-warning',
-        'txt': 'fas fa-file-alt text-secondary',
-        'jpg': 'fas fa-file-image text-info',
-        'jpeg': 'fas fa-file-image text-info',
-        'png': 'fas fa-file-image text-info',
-        'gif': 'fas fa-file-image text-info',
-        'zip': 'fas fa-file-archive text-dark'
-    };
-    return icons[ext] || 'fas fa-file text-secondary';
-}
-</script>
+        setupFilePond('#video-uploader', 'video');
+        setupFilePond('#audio-uploader', 'audio');
+        setupFilePond('#document-uploader', 'document');
+    });
+    </script>
 @endpush
-@endsection

@@ -272,7 +272,7 @@
             <nav class="sidebar-nav">
                 <!-- Dashboard -->
                 <div class="nav-section">
-                    <div class="nav-section-title">Dashboard</div>
+                    <div class.nav-section-title">Dashboard</div>
                     <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <i class="fas fa-tachometer-alt"></i>
                         Overview
@@ -285,6 +285,10 @@
                     <a href="{{ route('admin.lessons.index') }}" class="nav-link {{ request()->routeIs('admin.lessons.*') ? 'active' : '' }}">
                         <i class="fas fa-book-open"></i>
                         Lessons
+                    </a>
+                    <a href="{{ route('admin.content.index') }}" class="nav-link {{ request()->routeIs('admin.content.*') ? 'active' : '' }}">
+                        <i class="fas fa-search"></i>
+                        Content Scanner
                     </a>
                     <a href="{{ route('admin.blogs.index') }}" class="nav-link {{ request()->routeIs('admin.blogs.*') ? 'active' : '' }}">
                         <i class="fas fa-blog"></i>
@@ -341,10 +345,6 @@
                 <!-- System -->
                 <div class="nav-section">
                     <div class="nav-section-title">System</div>
-                    <a href="{{ route('admin.content.index') }}" class="nav-link {{ request()->routeIs('admin.content.*') ? 'active' : '' }}">
-                        <i class="fas fa-database"></i>
-                        Content Management
-                    </a>
                     <a href="{{ route('admin.backups.index') }}" class="nav-link {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}">
                         <i class="fas fa-shield-alt"></i>
                         Backups

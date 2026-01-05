@@ -1,0 +1,27 @@
+:root {
+    --primary-color: #2c5282; /* A nice blue */
+    --secondary-color: #2f855a; /* A complementary green */
+    --accent-color: #38a169; /* A lighter green for accents */
+    --background-light: #f0fff4; /* A very light green for backgrounds */
+    --background-white: #ffffff;
+    --text-dark: #2d3748; /* A dark gray for text */
+    --text-light: #718096; /* A lighter gray for less important text */
+    --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-body {
+    background-color: #f7fafc; /* light gray */
+}
+
+.admin-nav {
+    background-color: #1a202c; /* almost black */
+    color: #edf2f7; /* light gray */
+}
+
+.admin-nav a {
+    color: #edf2f7;
+}
+
+.admin-nav a:hover {
+    color: #cbd5e0; /* lighter gray */
+}

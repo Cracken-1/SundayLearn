@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'SundayLearn - Sunday School Teaching Platform')</title>
+    <title>@yield('title', config('app.name', 'SundayLearn') . ' - Sunday School Teaching Platform')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 </head>
-<body>
+<body class="{{ (isset($isAdminArea) && $isAdminArea) ? 'admin-body' : '' }}">
     @unless(isset($isAdminArea) && $isAdminArea)
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
                 <a href="{{ route('home') }}">
                     <i class="fas fa-book-open"></i>
-                    <span>SundayLearn</span>
+                    <span>{{ config('app.name', 'SundayLearn') }}</span>
                 </a>
             </div>
             <button class="nav-toggle" id="navToggle">
@@ -63,7 +64,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>About SundayLearn</h4>
+                    <h4>About {{ config('app.name', 'SundayLearn') }}</h4>
                     <p>Empowering Sunday school teachers with quality biblical education resources.</p>
                     <div style="margin-top: 1rem;">
                         <a href="#" style="color: var(--secondary-color); margin-right: 1rem; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
@@ -84,10 +85,9 @@
                 <div class="footer-section">
                     <h4>Categories</h4>
                     <ul>
-                        <li><a href="{{ route('lessons.index') }}?age=3-5">Ages 3-5</a></li>
-                        <li><a href="{{ route('lessons.index') }}?age=6-8">Ages 6-8</a></li>
-                        <li><a href="{{ route('lessons.index') }}?age=9-12">Ages 9-12</a></li>
-                        <li><a href="{{ route('lessons.index') }}?age=teen">Teen</a></li>
+                        @foreach(config('site.age_groups') as $key => $age_group)
+                            <li><a href="{{ route('lessons.index') }}?age={{ urlencode($key) }}">Class {{ $key }} ({{ $age_group }})</a></li>
+                        @endforeach
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -98,7 +98,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; {{ date('Y') }} SundayLearn. All rights reserved. | <a href="#" style="color: var(--secondary-color);">Privacy Policy</a> | <a href="#" style="color: var(--secondary-color);">Terms of Service</a></p>
+                <p>&copy; {{ date('Y') }} {{ config('app.name', 'SundayLearn') }}. All rights reserved. | <a href="#" style="color: var(--secondary-color);">Privacy Policy</a> | <a href="#" style="color: var(--secondary-color);">Terms of Service</a></p>
             </div>
         </div>
     </footer>

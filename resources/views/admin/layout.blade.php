@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Dashboard - SundayLearn')</title>
+    <title>@yield('title', 'Admin Dashboard - Friends of Children Ministries')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
@@ -262,8 +262,8 @@
         <!-- Sidebar -->
         <div class="admin-sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-book-open fa-2x mb-2"></i>
-                <h4>SundayLearn</h4>
+                <i class="fas fa-child fa-2x mb-2"></i>
+                <h4>Friends of Children Ministries</h4>
                 <div class="text-center mt-2">
                     <span class="role-badge">{{ ucfirst(str_replace('_', ' ', auth()->guard('admin')->user()->role ?? 'Admin')) }}</span>
                 </div>
@@ -370,7 +370,7 @@
                     </div>
                     <div>
                         <div class="fw-bold">{{ auth()->guard('admin')->user()->name ?? 'Administrator' }}</div>
-                        <small class="opacity-75">{{ auth()->guard('admin')->user()->email ?? 'admin@sundaylearn.com' }}</small>
+                        <small class="opacity-75">{{ auth()->guard('admin')->user()->email ?? 'admin@friendsofchildrenministries.org' }}</small>
                         <div class="mt-1">
                             <span class="badge badge-sm" style="background: rgba(255,255,255,0.2); font-size: 0.7rem;">
                                 <i class="fas fa-circle me-1" style="font-size: 0.5rem; color: #28a745;"></i>Online

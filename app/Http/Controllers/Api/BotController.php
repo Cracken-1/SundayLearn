@@ -54,7 +54,7 @@ class BotController extends Controller
     public function help()
     {
         return response()->json([
-            'message' => 'SundayLearn Bot API',
+            'message' => 'Friends of Children Ministries Bot API',
             'endpoints' => [
                 '/api/bot/stats',
                 '/api/bot/quick-lesson',

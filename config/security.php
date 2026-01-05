@@ -7,7 +7,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file contains security-related configuration options for the
-    | SundayLearn application.
+    | Friends of Children Ministries application.
     |
     */
 

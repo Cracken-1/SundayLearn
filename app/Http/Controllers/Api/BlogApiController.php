@@ -16,21 +16,21 @@ class BlogApiController extends Controller
                     'id' => 1,
                     'title' => 'Teaching Tips for Sunday School',
                     'excerpt' => 'Effective strategies for engaging young learners in Bible study.',
-                    'author' => 'SundayLearn Team',
+                    'author' => 'Friends of Children Ministries Team',
                     'published_at' => '2024-01-15',
                 ],
                 [
                     'id' => 2,
                     'title' => 'Creative Lesson Planning',
                     'excerpt' => 'How to make Bible lessons interactive and memorable.',
-                    'author' => 'SundayLearn Team',
+                    'author' => 'Friends of Children Ministries Team',
                     'published_at' => '2024-01-10',
                 ],
                 [
                     'id' => 3,
                     'title' => 'Managing Classroom Behavior',
                     'excerpt' => 'Positive discipline techniques for Sunday school teachers.',
-                    'author' => 'SundayLearn Team',
+                    'author' => 'Friends of Children Ministries Team',
                     'published_at' => '2024-01-05',
                 ],
             ];
@@ -58,7 +58,7 @@ class BlogApiController extends Controller
                 'title' => 'Sample Blog Post #' . $id,
                 'content' => 'This is sample content for blog post ' . $id . '. In a real application, this would come from the database.',
                 'excerpt' => 'Sample excerpt for blog post ' . $id,
-                'author' => 'SundayLearn Team',
+                'author' => 'Friends of Children Ministries Team',
                 'published_at' => '2024-01-15',
                 'tags' => ['teaching', 'sunday-school', 'tips']
             ];
@@ -85,7 +85,7 @@ class BlogApiController extends Controller
                     'id' => 1,
                     'title' => 'Teaching Tips for Sunday School',
                     'excerpt' => 'Effective strategies for engaging young learners in Bible study.',
-                    'author' => 'SundayLearn Team',
+                    'author' => 'Friends of Children Ministries Team',
                     'published_at' => '2024-01-15',
                 ]
             ];

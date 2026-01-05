@@ -1,6 +1,6 @@
 <?php
 /**
- * Performance Optimization Script for SundayLearn
+ * Performance Optimization Script for Friends of Children Ministries
  * 
  * This script optimizes the application for better performance on InfinityFree
  * 
@@ -158,34 +158,11 @@ class PerformanceOptimizer
         
         try {
             // Create view for published lessons with counts
-            DB::statement("
-                CREATE OR REPLACE VIEW published_lessons_view AS
-                SELECT 
-                    id, title, slug, excerpt, scripture, theme, age_group, 
-                    duration, thumbnail, category, difficulty, is_featured,
-                    views_count, published_at, created_at
-                FROM lessons 
-                WHERE status = 'published' 
-                ORDER BY published_at DESC
-            ");
+            DB::statement("\n                CREATE OR REPLACE VIEW published_lessons_view AS\n                SELECT \n                    id, title, slug, excerpt, scripture, theme, age_group, \n                    duration, thumbnail, category, difficulty, is_featured,\n                    views_count, published_at, created_at\n                FROM lessons \n                WHERE status = 'published' \n                ORDER BY published_at DESC\n            ");
             echo "   ✅ Created published_lessons_view\n";
             
             // Create view for featured content
-            DB::statement("
-                CREATE OR REPLACE VIEW featured_content_view AS
-                SELECT 
-                    'lesson' as type, id, title, slug, excerpt, 
-                    thumbnail, created_at, views_count
-                FROM lessons 
-                WHERE status = 'published' AND is_featured = 1
-                UNION ALL
-                SELECT 
-                    'blog' as type, id, title, slug, excerpt, 
-                    image_url as thumbnail, created_at, views_count
-                FROM blog_posts 
-                WHERE status = 'published' AND is_featured = 1
-                ORDER BY created_at DESC
-            ");
+            DB::statement("\n                CREATE OR REPLACE VIEW featured_content_view AS\n                SELECT \n                    'lesson' as type, id, title, slug, excerpt, \n                    thumbnail, created_at, views_count\n                FROM lessons \n                WHERE status = 'published' AND is_featured = 1\n                UNION ALL\n                SELECT \n                    'blog' as type, id, title, slug, excerpt, \n                    image_url as thumbnail, created_at, views_count\n                FROM blog_posts \n                WHERE status = 'published' AND is_featured = 1\n                ORDER BY created_at DESC\n            ");
             echo "   ✅ Created featured_content_view\n";
             
         } catch (Exception $e) {
@@ -203,7 +180,7 @@ if (php_sapi_name() !== 'cli') {
 $optimizer = new PerformanceOptimizer();
 $optimizer->run();
 
-echo "\n🎉 Your SundayLearn application is now optimized for production!\n";
+echo "\n🎉 Your Friends of Children Ministries application is now optimized for production!\n";
 echo "💡 For best results on InfinityFree:\n";
 echo "   - Run this script after each deployment\n";
 echo "   - Monitor your resource usage\n";

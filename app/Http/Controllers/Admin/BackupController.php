@@ -141,7 +141,7 @@ class BackupController extends Controller
         try {
             // Export database structure and data
             $tables = DB::select('SHOW TABLES');
-            $sql = "-- SundayLearn Database Backup\n";
+            $sql = "-- Friends of Children Ministries Database Backup\n";
             $sql .= "-- Generated on: " . date('Y-m-d H:i:s') . "\n\n";
 
             foreach ($tables as $table) {

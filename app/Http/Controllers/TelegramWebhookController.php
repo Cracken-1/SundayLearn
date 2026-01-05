@@ -48,7 +48,7 @@ class TelegramWebhookController extends Controller
                 return response()->json([
                     'method' => 'sendMessage',
                     'chat_id' => $chatId,
-                    'text' => "Welcome to SundayLearn Bot! 🌟\n\nI am connected and working.\n\nUse /help to see what I can do.",
+                    'text' => "Welcome to Friends of Children Ministries Bot! 🌟\n\nI am connected and working.\n\nUse /help to see what I can do.",
                 ]);
             }
             

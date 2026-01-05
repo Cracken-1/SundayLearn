@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', config('app.name', 'SundayLearn') . ' - Sunday School Teaching Platform')</title>
+    <title>@yield('title', config('app.name', 'Friends of Children Ministries'))</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
@@ -17,8 +17,8 @@
         <div class="container">
             <div class="nav-brand">
                 <a href="{{ route('home') }}">
-                    <i class="fas fa-book-open"></i>
-                    <span>{{ config('app.name', 'SundayLearn') }}</span>
+                    <i class="fas fa-child"></i>
+                    <span>{{ config('app.name', 'Friends of Children Ministries') }}</span>
                 </a>
             </div>
             <button class="nav-toggle" id="navToggle">
@@ -49,7 +49,7 @@
         <div class="container" style="text-align: center;">
             <h3 style="color: white; margin-bottom: 1rem; font-size: 2rem;">Stay Updated</h3>
             <p style="margin-bottom: 2rem; opacity: 0.95; font-size: 1.1rem;">
-                Get new lessons and teaching tips delivered to your inbox every week
+                Stay updated with our latest news and events.
             </p>
             <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing! (Demo mode)');">
                 <input type="email" placeholder="Enter your email address" required>
@@ -64,8 +64,8 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>About {{ config('app.name', 'SundayLearn') }}</h4>
-                    <p>Empowering Sunday school teachers with quality biblical education resources.</p>
+                    <h4>About {{ config('app.name', 'Friends of Children Ministries') }}</h4>
+                    <p>Serving children and families with love and support.</p>
                     <div style="margin-top: 1rem;">
                         <a href="#" style="color: var(--secondary-color); margin-right: 1rem; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
                         <a href="#" style="color: var(--secondary-color); margin-right: 1rem; font-size: 1.5rem;"><i class="fab fa-twitter"></i></a>
@@ -92,13 +92,13 @@
                 </div>
                 <div class="footer-section">
                     <h4>Contact</h4>
-                    <p><i class="fas fa-envelope"></i> hello@sundaylearn.com</p>
+                    <p><i class="fas fa-envelope"></i> contact@friendsofchildrenministries.org</p>
                     <p><i class="fas fa-phone"></i> (555) 123-4567</p>
                     <p><i class="fas fa-map-marker-alt"></i> Serving churches nationwide</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; {{ date('Y') }} {{ config('app.name', 'SundayLearn') }}. All rights reserved. | <a href="#" style="color: var(--secondary-color);">Privacy Policy</a> | <a href="#" style="color: var(--secondary-color);">Terms of Service</a></p>
+                <p>&copy; {{ date('Y') }} {{ config('app.name', 'Friends of Children Ministries') }}. All rights reserved. | <a href="#" style="color: var(--secondary-color);">Privacy Policy</a> | <a href="#" style="color: var(--secondary-color);">Terms of Service</a></p>
             </div>
         </div>
     </footer>

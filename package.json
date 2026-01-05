@@ -1,7 +1,7 @@
 {
-    "name": "sundaylearn",
+    "name": "friends-of-children-ministries",
     "version": "1.0.0",
-    "description": "Sunday School Management Platform",
+    "description": "Friends of Children Ministries Platform",
     "main": "index.js",
     "scripts": {
         "dev": "vite",
@@ -17,16 +17,16 @@
         "content-management",
         "teaching"
     ],
-    "author": "SundayLearn Team",
+    "author": "Friends of Children Ministries Team",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Cracken-1/SundayLearn.git"
+        "url": "https://github.com/Cracken-1/friends-of-children-ministries.git"
     },
     "bugs": {
-        "url": "https://github.com/Cracken-1/SundayLearn/issues"
+        "url": "https://github.com/Cracken-1/friends-of-children-ministries/issues"
     },
-    "homepage": "https://github.com/Cracken-1/SundayLearn#readme",
+    "homepage": "https://github.com/Cracken-1/friends-of-children-ministries#readme",
     "devDependencies": {
         "axios": "^1.6.2",
         "bootstrap": "^5.3.2",

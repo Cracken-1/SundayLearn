@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - SundayLearn</title>
+    <title>Admin Login - Friends of Children Ministries</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
@@ -162,10 +162,10 @@
     <div class="login-card">
         <div class="login-header">
             <div class="admin-icon">
-                <i class="fas fa-book-open fa-2x"></i>
+                <i class="fas fa-child fa-2x"></i>
             </div>
             <h3 class="mb-2">Admin Access</h3>
-            <p class="mb-0 opacity-90">SundayLearn Administration Portal</p>
+            <p class="mb-0 opacity-90">Friends of Children Ministries Administration Portal</p>
         </div>
         
         <div class="login-body">

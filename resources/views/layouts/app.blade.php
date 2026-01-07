@@ -51,8 +51,9 @@
             <p style="margin-bottom: 2rem; opacity: 0.95; font-size: 1.1rem;">
                 Stay updated with our latest news and events.
             </p>
-            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing! (Demo mode)');">
-                <input type="email" placeholder="Enter your email address" required>
+            <form class="newsletter-form" method="POST" action="{{ route('newsletter.subscribe') }}">
+                @csrf
+                <input type="email" name="email" placeholder="Enter your email address" required>
                 <button type="submit">
                     <i class="fas fa-paper-plane"></i> Subscribe
                 </button>

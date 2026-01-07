@@ -208,7 +208,7 @@
                 </div>
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required placeholder="john@example.com">
+                    <input type="email" id="email" name="email" required placeholder="user@domain.com">
                 </div>
                 <div class="form-group">
                     <label for="create_password">Password</label>
@@ -257,7 +257,7 @@
                 <div class="form-group">
                     <label for="update_email">User Email</label>
                     <input type="email" id="update_email" name="update_email" required 
-                           placeholder="admin@example.com">
+                           placeholder="admin@domain.com">
                     <div class="help-text">Email of the user whose password you want to change</div>
                 </div>
                 <div class="form-group">

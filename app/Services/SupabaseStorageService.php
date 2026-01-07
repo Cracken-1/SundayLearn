@@ -2,20 +2,26 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use Supabase\CreateClient;
 use Illuminate\Support\Facades\Log;
 
 class SupabaseStorageService
 {
-    protected $url;
-    protected $key;
+    protected $client;
     protected $bucket;
 
     public function __construct()
     {
-        $this->url = config('services.supabase.url');
-        $this->key = config('services.supabase.service_key');
-        $this->bucket = config('services.supabase.bucket', 'lessons-images');
+        // Extract reference ID from URL (e.g., https://abc123.supabase.co -> abc123)
+        $url = \config('supabase.url');
+        $referenceId = parse_url($url, PHP_URL_HOST);
+        $referenceId = explode('.', $referenceId)[0];
+        
+        $this->client = new CreateClient(
+            \config('supabase.service_key'),
+            $referenceId
+        );
+        $this->bucket = \config('supabase.buckets.lessons_images', 'lessons-images');
     }
 
     /**
@@ -26,32 +32,26 @@ class SupabaseStorageService
         $bucket = $bucket ?? $this->bucket;
         
         try {
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->key}",
-                'Content-Type' => $file->getMimeType(),
-            ])->attach(
-                'file',
-                file_get_contents($file->getRealPath()),
-                $file->getClientOriginalName()
-            )->post("{$this->url}/storage/v1/object/{$bucket}/{$path}");
+            $fileContent = file_get_contents($file->getRealPath());
+            
+            $response = $this->client->storage
+                ->from($bucket)
+                ->upload($path, $fileContent, [
+                    'contentType' => $file->getMimeType()
+                ]);
 
-            if ($response->successful()) {
+            if ($response) {
                 return [
                     'success' => true,
                     'path' => $path,
                     'url' => $this->getPublicUrl($path, $bucket),
-                    'data' => $response->json()
+                    'data' => $response
                 ];
             }
 
-            Log::error('Supabase upload failed', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-
             return [
                 'success' => false,
-                'error' => $response->json()['message'] ?? 'Upload failed'
+                'error' => 'Upload failed'
             ];
         } catch (\Exception $e) {
             Log::error('Supabase upload exception', [
@@ -73,11 +73,11 @@ class SupabaseStorageService
         $bucket = $bucket ?? $this->bucket;
         
         try {
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->key}",
-            ])->delete("{$this->url}/storage/v1/object/{$bucket}/{$path}");
+            $response = $this->client->storage
+                ->from($bucket)
+                ->remove([$path]);
 
-            return $response->successful();
+            return !empty($response);
         } catch (\Exception $e) {
             Log::error('Supabase delete exception', [
                 'message' => $e->getMessage()
@@ -92,7 +92,17 @@ class SupabaseStorageService
     public function getPublicUrl($path, $bucket = null)
     {
         $bucket = $bucket ?? $this->bucket;
-        return "{$this->url}/storage/v1/object/public/{$bucket}/{$path}";
+        
+        try {
+            return $this->client->storage
+                ->from($bucket)
+                ->getPublicUrl($path);
+        } catch (\Exception $e) {
+            Log::error('Supabase getPublicUrl exception', [
+                'message' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 
     /**
@@ -103,19 +113,14 @@ class SupabaseStorageService
         $bucket = $bucket ?? $this->bucket;
         
         try {
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->key}",
-            ])->post("{$this->url}/storage/v1/object/list/{$bucket}", [
-                'prefix' => $prefix,
-                'limit' => 100,
-                'offset' => 0
-            ]);
+            $response = $this->client->storage
+                ->from($bucket)
+                ->list($prefix, [
+                    'limit' => 100,
+                    'offset' => 0
+                ]);
 
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            return [];
+            return $response ?? [];
         } catch (\Exception $e) {
             Log::error('Supabase list exception', [
                 'message' => $e->getMessage()
@@ -185,13 +190,13 @@ class SupabaseStorageService
         try {
             $fileContent = file_get_contents($url);
             
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->key}",
-                'Content-Type' => 'application/octet-stream',
-            ])->withBody($fileContent, 'application/octet-stream')
-              ->post("{$this->url}/storage/v1/object/{$bucket}/{$path}");
+            $response = $this->client->storage
+                ->from($bucket)
+                ->upload($path, $fileContent, [
+                    'contentType' => 'application/octet-stream'
+                ]);
 
-            if ($response->successful()) {
+            if ($response) {
                 return [
                     'success' => true,
                     'path' => $path,
@@ -201,7 +206,7 @@ class SupabaseStorageService
 
             return [
                 'success' => false,
-                'error' => $response->json()['message'] ?? 'Upload failed'
+                'error' => 'Upload failed'
             ];
         } catch (\Exception $e) {
             Log::error('Supabase upload from URL exception', [
@@ -213,5 +218,13 @@ class SupabaseStorageService
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Get the Supabase client instance
+     */
+    public function getClient()
+    {
+        return $this->client;
     }
 }

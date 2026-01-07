@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BlogPost;
 use Illuminate\Http\Request;
 
 class BlogApiController extends Controller
@@ -10,35 +11,18 @@ class BlogApiController extends Controller
     public function index()
     {
         try {
-            // Return sample blog data for now
-            $blogs = [
-                [
-                    'id' => 1,
-                    'title' => 'Teaching Tips for Sunday School',
-                    'excerpt' => 'Effective strategies for engaging young learners in Bible study.',
-                    'author' => 'Friends of Children Ministries Team',
-                    'published_at' => '2024-01-15',
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'Creative Lesson Planning',
-                    'excerpt' => 'How to make Bible lessons interactive and memorable.',
-                    'author' => 'Friends of Children Ministries Team',
-                    'published_at' => '2024-01-10',
-                ],
-                [
-                    'id' => 3,
-                    'title' => 'Managing Classroom Behavior',
-                    'excerpt' => 'Positive discipline techniques for Sunday school teachers.',
-                    'author' => 'Friends of Children Ministries Team',
-                    'published_at' => '2024-01-05',
-                ],
-            ];
+            $blogs = BlogPost::where('status', 'published')
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->orderBy('published_at', 'desc')
+                ->paginate(10);
 
             return response()->json([
                 'success' => true,
-                'data' => $blogs,
-                'total' => count($blogs)
+                'data' => $blogs->items(),
+                'total' => $blogs->total(),
+                'current_page' => $blogs->currentPage(),
+                'last_page' => $blogs->lastPage()
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -52,16 +36,12 @@ class BlogApiController extends Controller
     public function show($id)
     {
         try {
-            // Return sample blog data for now
-            $blog = [
-                'id' => (int)$id,
-                'title' => 'Sample Blog Post #' . $id,
-                'content' => 'This is sample content for blog post ' . $id . '. In a real application, this would come from the database.',
-                'excerpt' => 'Sample excerpt for blog post ' . $id,
-                'author' => 'Friends of Children Ministries Team',
-                'published_at' => '2024-01-15',
-                'tags' => ['teaching', 'sunday-school', 'tips']
-            ];
+            $blog = BlogPost::where('status', 'published')
+                ->where('id', $id)
+                ->firstOrFail();
+
+            // Increment view count
+            $blog->increment('views_count');
 
             return response()->json([
                 'success' => true,
@@ -70,30 +50,26 @@ class BlogApiController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch blog',
+                'message' => 'Blog not found',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 404);
         }
     }
 
     public function latest()
     {
         try {
-            // Return latest blog posts
-            $blogs = [
-                [
-                    'id' => 1,
-                    'title' => 'Teaching Tips for Sunday School',
-                    'excerpt' => 'Effective strategies for engaging young learners in Bible study.',
-                    'author' => 'Friends of Children Ministries Team',
-                    'published_at' => '2024-01-15',
-                ]
-            ];
+            $blogs = BlogPost::where('status', 'published')
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->orderBy('published_at', 'desc')
+                ->take(5)
+                ->get();
 
             return response()->json([
                 'success' => true,
                 'data' => $blogs,
-                'total' => count($blogs)
+                'total' => $blogs->count()
             ]);
         } catch (\Exception $e) {
             return response()->json([

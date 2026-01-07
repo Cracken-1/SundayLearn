@@ -1,27 +1,69 @@
+/* Admin Panel - Black & White Theme */
 :root {
-    --primary-color: #2c5282; /* A nice blue */
-    --secondary-color: #2f855a; /* A complementary green */
-    --accent-color: #38a169; /* A lighter green for accents */
-    --background-light: #f0fff4; /* A very light green for backgrounds */
-    --background-white: #ffffff;
-    --text-dark: #2d3748; /* A dark gray for text */
-    --text-light: #718096; /* A lighter gray for less important text */
-    --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --admin-primary: #000000;      /* Pure Black */
+    --admin-secondary: #333333;    /* Dark Gray */
+    --admin-accent: #666666;       /* Medium Gray */
+    --admin-background: #ffffff;   /* Pure White */
+    --admin-surface: #f8f9fa;      /* Light Gray */
+    --admin-text-primary: #000000; /* Black Text */
+    --admin-text-secondary: #666666; /* Gray Text */
+    --admin-border: #e0e0e0;       /* Light Border */
+    --admin-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .admin-body {
-    background-color: #f7fafc; /* light gray */
+    background-color: var(--admin-background);
+    color: var(--admin-text-primary);
 }
 
 .admin-nav {
-    background-color: #1a202c; /* almost black */
-    color: #edf2f7; /* light gray */
+    background-color: var(--admin-primary);
+    color: #ffffff;
+    border-bottom: 1px solid var(--admin-border);
 }
 
 .admin-nav a {
-    color: #edf2f7;
+    color: #ffffff;
+    transition: color 0.3s ease;
 }
 
 .admin-nav a:hover {
-    color: #cbd5e0; /* lighter gray */
+    color: #cccccc;
+}
+
+.admin-sidebar {
+    background-color: var(--admin-surface);
+    border-right: 1px solid var(--admin-border);
+}
+
+.admin-content {
+    background-color: var(--admin-background);
+}
+
+.admin-card {
+    background-color: var(--admin-background);
+    border: 1px solid var(--admin-border);
+    box-shadow: var(--admin-shadow);
+}
+
+.admin-btn-primary {
+    background-color: var(--admin-primary);
+    color: #ffffff;
+    border: 1px solid var(--admin-primary);
+}
+
+.admin-btn-primary:hover {
+    background-color: var(--admin-secondary);
+    border-color: var(--admin-secondary);
+}
+
+.admin-btn-secondary {
+    background-color: transparent;
+    color: var(--admin-primary);
+    border: 1px solid var(--admin-primary);
+}
+
+.admin-btn-secondary:hover {
+    background-color: var(--admin-primary);
+    color: #ffffff;
 }

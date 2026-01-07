@@ -24,6 +24,10 @@ Route::get('/about', [App\Http\Controllers\PageController::class, 'about'])->nam
 Route::get('/resources', [App\Http\Controllers\ResourceController::class, 'index'])->name('resources.index');
 Route::get('/resources/{id}/download', [App\Http\Controllers\ResourceController::class, 'download'])->name('resources.download');
 
+// Newsletter routes
+Route::post('/newsletter/subscribe', [App\Http\Controllers\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/newsletter/unsubscribe', [App\Http\Controllers\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
+
 // Admin authentication routes (outside middleware)
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLogin'])->name('login');

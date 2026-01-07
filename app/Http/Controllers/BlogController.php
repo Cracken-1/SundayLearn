@@ -31,16 +31,6 @@ class BlogController extends Controller
             })
             ->toArray();
         
-        // Add sample categories if database is empty
-        if (empty($categories)) {
-            $categories = [
-                ['name' => 'Teaching Tips', 'count' => 0, 'icon' => 'lightbulb'],
-                ['name' => 'Classroom Management', 'count' => 0, 'icon' => 'users-cog'],
-                ['name' => 'Lesson Planning', 'count' => 0, 'icon' => 'calendar-alt'],
-                ['name' => 'Activities & Crafts', 'count' => 0, 'icon' => 'palette'],
-            ];
-        }
-        
         return view('blog.index', compact('posts', 'categories'));
     }
 

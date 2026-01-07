@@ -2,16 +2,16 @@
 
 /* CSS Variables */
 :root {
-    --primary-color: #8B4513;
-    --secondary-color: #DAA520;
-    --accent-color: #CD853F;
-    --text-dark: #2C1810;
-    --text-light: #6B4423;
-    --background-light: #FDF6E3;
+    --primary-color: #2E8B57;      /* Sea Green */
+    --secondary-color: #20B2AA;    /* Light Sea Green */
+    --accent-color: #48D1CC;       /* Medium Turquoise */
+    --text-dark: #1C3A32;          /* Dark Green */
+    --text-light: #4A6B5D;         /* Medium Green */
+    --background-light: #F0FFF0;   /* Honeydew */
     --background-white: #FFFFFF;
-    --border-color: #E6D5B7;
-    --success-color: #228B22;
-    --warning-color: #FF8C00;
+    --border-color: #B0E0E6;       /* Powder Blue */
+    --success-color: #228B22;      /* Forest Green */
+    --warning-color: #FF8C00;      /* Dark Orange */
     
     --font-heading: 'Crimson Text', serif;
     --font-body: 'Open Sans', sans-serif;

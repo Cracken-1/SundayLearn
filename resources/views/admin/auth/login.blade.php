@@ -11,14 +11,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #8B4513;
-            --secondary-color: #DAA520;
-            --accent-color: #CD853F;
-            --text-dark: #2C1810;
-            --text-light: #6B4423;
-            --background-light: #FDF6E3;
-            --background-white: #FFFFFF;
-            --border-color: #E6D5B7;
+            --admin-primary: #000000;      /* Pure Black */
+            --admin-secondary: #333333;    /* Dark Gray */
+            --admin-accent: #666666;       /* Medium Gray */
+            --admin-background: #ffffff;   /* Pure White */
+            --admin-surface: #f8f9fa;      /* Light Gray */
+            --admin-text-primary: #000000; /* Black Text */
+            --admin-text-secondary: #666666; /* Gray Text */
+            --admin-border: #e0e0e0;       /* Light Border */
             --font-heading: 'Crimson Text', serif;
             --font-body: 'Open Sans', sans-serif;
             --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
@@ -27,27 +27,27 @@
         }
         
         body {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: var(--font-body);
-            color: var(--text-dark);
+            color: var(--admin-text-primary);
         }
         
         .login-card {
-            background: var(--background-white);
+            background: var(--admin-background);
             border-radius: 20px;
             box-shadow: var(--shadow-heavy);
             overflow: hidden;
             max-width: 450px;
             width: 100%;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--admin-border);
         }
         
         .login-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
             color: white;
             padding: 2.5rem 2rem;
             text-align: center;
@@ -79,32 +79,33 @@
         
         .login-body {
             padding: 2.5rem 2rem;
-            background: var(--background-light);
+            background: var(--admin-surface);
         }
         
         .form-label {
-            color: var(--text-dark);
+            color: var(--admin-text-primary);
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
         
         .form-control {
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--admin-border);
             border-radius: 10px;
             padding: 12px 16px;
             font-size: 1rem;
             transition: all 0.3s ease;
-            background: var(--background-white);
+            background: var(--admin-background);
+            color: var(--admin-text-primary);
         }
         
         .form-control:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.25);
-            background: var(--background-white);
+            border-color: var(--admin-secondary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+            background: var(--admin-background);
         }
         
         .btn-admin {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
             border: none;
             color: white;
             padding: 14px 30px;
@@ -120,7 +121,7 @@
             transform: translateY(-2px);
             box-shadow: var(--shadow-heavy);
             color: white;
-            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+            background: linear-gradient(135deg, var(--admin-secondary) 0%, var(--admin-accent) 100%);
         }
         
         .btn-admin:active {
@@ -128,24 +129,24 @@
         }
         
         .alert-info {
-            background: rgba(218, 165, 32, 0.1);
-            border: 1px solid var(--secondary-color);
-            color: var(--text-dark);
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--admin-border);
+            color: var(--admin-text-primary);
             border-radius: 10px;
         }
         
         .text-muted {
-            color: var(--text-light) !important;
+            color: var(--admin-text-secondary) !important;
         }
         
         .login-footer-link {
-            color: var(--text-light);
+            color: var(--admin-text-secondary);
             text-decoration: none;
             transition: color 0.3s ease;
         }
         
         .login-footer-link:hover {
-            color: var(--primary-color);
+            color: var(--admin-primary);
             text-decoration: none;
         }
         
